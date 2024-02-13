@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/login/',Login.as_view(),name="Login"),
     path('api/Registro/',Registro.as_view(),name="Registro"), 
     path('api/',include("Conexion.urls")), 
+    path('api/',include("Conexion.urls_graficos")), 
     
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

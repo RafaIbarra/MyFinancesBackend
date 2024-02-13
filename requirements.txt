@@ -9,8 +9,11 @@ djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.7
 fonttools==4.48.1
 inflection==0.5.1
+Jinja2==3.1.3
 kiwisolver==1.4.5
+MarkupSafe==2.1.5
 matplotlib==3.8.2
+mpld3==0.5.10
 numpy==1.26.4
 packaging==23.2
 pandas==2.2.0
