@@ -140,3 +140,16 @@ class SesionesActivas(models.Model):
 
     def __str__(self):
         return (f"{self.user_name.capitalize()} , {self.user_name.capitalize()}")
+    
+
+class Meses(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    numero_mes=models.IntegerField( default=1)
+    nombre_mes=models.CharField(max_length=100,blank=False)
+    fecha_registro=models.DateTimeField("fecha_registro")
+    
+    class Meta:
+        db_table="Meses"
+
+    def __str__(self):
+        return (f"{self.nombre_mes.capitalize()} , {self.nombre_mes.capitalize()}")

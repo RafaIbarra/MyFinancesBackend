@@ -201,3 +201,8 @@ class BalanceSerializers(serializers.Serializer):
 
     def validate(self,data):
         return data
+    
+class MesesSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Meses
+        fields= '__all__'

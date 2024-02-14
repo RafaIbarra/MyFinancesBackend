@@ -38,43 +38,42 @@ def graf_balance(request,anno,mes):
         condicion3 = Q(fecha_ingreso__month=mes)
         ingresos=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
 
-        # Convertir a DataFrames de Pandas
-        df_egresos = pd.DataFrame(EgresosSerializers(egresos, many=True).data)
-        df_ingresos = pd.DataFrame(IngresosSerializers(ingresos, many=True).data)
+        if egresos and ingresos:
+            df_egresos = pd.DataFrame(EgresosSerializers(egresos, many=True).data)
+            df_ingresos = pd.DataFrame(IngresosSerializers(ingresos, many=True).data)
 
-        # Realizar operaciones y cálculos necesarios en los DataFrames
+            
+            df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
+            
+            
+            df_ingresos_total = df_ingresos['monto_ingreso'].sum()
+            
+            
+            valores = [df_ingresos_total, df_egresos_agrupado['monto_gasto'].sum()] 
+            labels = ['Ingresos', 'Egresos']
 
-        # Generar gráfico HTML con Plotly
-        # print(df_egresos)
-        df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
-        
-        
-        df_ingresos_total = df_ingresos['monto_ingreso'].sum()
-        
-        
-        valores = [df_ingresos_total, df_egresos_agrupado['monto_gasto'].sum()] 
-        labels = ['Ingresos', 'Egresos']
+            # Crear gráfico
+            fig, ax = plt.subplots()
+            ax.pie(valores, labels=labels)
 
-        # Crear gráfico
-        fig, ax = plt.subplots()
-        ax.pie(valores, labels=labels)
+            # Guardar como imagen PNG
+            buffer = BytesIO()
+            fig.savefig(buffer, format='png')
+            imagen_bytes = buffer.getvalue()
 
-        # Guardar como imagen PNG
-        buffer = BytesIO()
-        fig.savefig(buffer, format='png')
-        imagen_bytes = buffer.getvalue()
-
-        # b64_string = "data:image/png;base64," + base64.b64encode(cadena_base64).decode('utf-8') 
-        imagen_b64 = base64.b64encode(imagen_bytes).decode('utf-8') 
-        
-        try:
-            base64.b64decode(imagen_b64)
-            print("Cadena base64 válida")
-        except Exception as e:
-            print("Cadena base64 inválida")
-        return Response({
-            'imagen_grafico': imagen_b64
-        })
+            # b64_string = "data:image/png;base64," + base64.b64encode(cadena_base64).decode('utf-8') 
+            imagen_b64 = base64.b64encode(imagen_bytes).decode('utf-8') 
+            
+            try:
+                base64.b64decode(imagen_b64)
+                print("Cadena base64 válida")
+            except Exception as e:
+                print("Cadena base64 inválida")
+            return Response({
+                'imagen_grafico': imagen_b64
+            })
+        else:
+             return Response({'message':'sin datos'},status= status.HTTP_200_OK)
 
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)

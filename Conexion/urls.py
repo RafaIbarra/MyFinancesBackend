@@ -3,6 +3,9 @@ from Conexion.Apis.api_registros_basicos import *
 from Conexion.Apis.api_registros_movimientos import *
 from Conexion.Estaditicas.estadisticas import balance
 urlpatterns = [
+
+    path('Meses/',meses,name='meses'),
+
     path('RegistroGasto/',registrogasto,name='registrogasto'),
     path('MisGastos/',misgastos,name='misgastos'),
     path('RegistroEgreso/',registroegreso,name='registroegreso'),
