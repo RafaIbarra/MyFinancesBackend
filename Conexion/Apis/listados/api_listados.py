@@ -1,47 +1,39 @@
 from django.db.models import Q
 
-from rest_framework.views import APIView
+
 from rest_framework.response import Response
 from rest_framework import status  
 from rest_framework.decorators import api_view
 import pandas as pd
-import plotly.express as px
-import plotly.offline as opy
-from io import BytesIO
-from django.http import HttpResponse
+
 
 from Conexion.obtener_datos_token import obtener_datos_token
 from Conexion.validaciones import validacionpeticion
 
-from  Conexion.models import Egresos, Ingresos
-from  Conexion.Serializers import EgresosSerializers, IngresosSerializers,BalanceSerializers
+from Conexion.models import Egresos, Ingresos
+from Conexion.Serializers import EgresosSerializers, IngresosSerializers,BalanceSerializers,ResumenSerializers
+from Conexion.Apis.listados.datos import detalle_egresos,detalle_ingresos
 
 @api_view(['POST'])
-def balance(request,anno,mes):
+def resumen(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True: 
         # Obtener datos de la base de datos
         
-        condicion1 = Q(user_id__exact=id_user)
-        condicion2 = Q(fecha_gasto__year=anno)
-        condicion3 = Q(fecha_gasto__month=mes)
-        egresos=Egresos.objects.filter(condicion1 & condicion2 & condicion3)
-
-
-        ingresos = Ingresos.objects.all()
-        condicion1 = Q(user_id__exact=id_user)
-        condicion2 = Q(fecha_ingreso__year=anno)
-        condicion3 = Q(fecha_ingreso__month=mes)
-        ingresos=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
-
+        
+        egresos=detalle_egresos(id_user,anno,mes)
+        
+        ingresos=detalle_ingresos(id_user,anno,mes)
+        
         if egresos and ingresos:
-
+            
             df_egresos = pd.DataFrame(EgresosSerializers(egresos, many=True).data)
             df_ingresos = pd.DataFrame(IngresosSerializers(ingresos, many=True).data)
-
+            
         
             df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
+            
             
             df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
             
@@ -64,17 +56,33 @@ def balance(request,anno,mes):
             df_result_final = pd.concat([df_final, df_saldos], ignore_index=True, sort=False)
             df_result_final = df_result_final.fillna(0)
             df_result_final['Saldo']=saldo
-            print(df_result_final)
+            
             data_list = df_result_final.to_dict(orient='records')
+            
             resultado=BalanceSerializers(data=data_list,many=True)
             
-            if resultado.is_valid():
+
+            ingresos_serializer=IngresosSerializers(ingresos,many=True)
+            
+            egresos_serializer=EgresosSerializers(egresos,many=True)
+            
+            if ingresos_serializer.data and egresos_serializer.data and resultado.is_valid():
                 
-                return Response(resultado.data,status= status.HTTP_200_OK)
-        
-            return Response({'message':resultado.errors},status= status.HTTP_400_BAD_REQUEST)
+                resumen_data={
+                    'Resumen':resultado.validated_data,
+                    'Ingresos':ingresos_serializer.data,
+                    'Egresos':egresos_serializer.data
+                }
+                
+                r_final = ResumenSerializers(resumen_data)
+                if r_final.data:
+                    return Response(r_final.data, status=status.HTTP_200_OK)
+                
+                return Response({'message':r_final.errors},status= status.HTTP_400_BAD_REQUEST)
+
+            return Response({'message':ingresos_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'message':'sin datos'},status= status.HTTP_200_OK)
+            return Response([],status= status.HTTP_200_OK)
         
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)

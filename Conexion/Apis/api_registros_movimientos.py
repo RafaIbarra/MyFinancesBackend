@@ -61,7 +61,7 @@ def misegresos(request,anno,mes):
             return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
                 
         else:
-            return Response({'message':'No se encontraron los datos'},status= status.HTTP_400_BAD_REQUEST)
+            return Response([],status= status.HTTP_200_OK)
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
@@ -119,6 +119,6 @@ def misingresos(request,anno,mes):
             return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
                 
         else:
-            return Response({'message':'No se encontraron los datos'},status= status.HTTP_400_BAD_REQUEST)
+            return Response([],status= status.HTTP_200_OK)
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
