@@ -6,9 +6,11 @@ from Conexion.Serializers import EgresosSerializers,IngresosSerializers
 from Conexion.models import Egresos,Ingresos
 from Conexion.obtener_datos_token import obtener_datos_token
 from Conexion.validaciones import validacionpeticion
+from Conexion.Apis.listados.datos import datos_balance
 import time
 from django.utils import timezone
-
+import ast
+from datetime import datetime
 
 @api_view(['POST'])
 def registroegreso(request):
@@ -29,16 +31,47 @@ def registroegreso(request):
             "fecha_registro": timezone.now()
             
         }
-        data_list.append(datasave)
+        
 
+        fecha_obj = datetime.strptime(datasave['fecha_gasto'], '%Y-%m-%d')
+
+        anno=fecha_obj.year
+        mes=fecha_obj.month
+        data_list.append(datasave)
+        
         egreso_serializer=EgresosSerializers(data=datasave)
         if egreso_serializer.is_valid():
             egreso_serializer.save()
-            return Response(egreso_serializer.data,status= status.HTTP_200_OK)
+            data=datos_balance(id_user,anno,mes)
+            return Response(data,status= status.HTTP_200_OK)
 
         return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
     else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
+def eliminaregreso(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+            
+        gastosdel=request.data['gastos']
+        
+        if len(gastosdel)>0:
+            for item in gastosdel:
+                condicion1 = Q(id__exact=item)
+                lista=Egresos.objects.filter(condicion1).values()
+                if lista:
+                    gasto = Egresos.objects.get(pk=item)
+                    gasto.delete()
+
+            return Response({'message':'ok'},status= status.HTTP_200_OK)
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+    else:
+         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
 @api_view(['POST'])
