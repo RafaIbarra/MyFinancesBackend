@@ -15,10 +15,14 @@ urlpatterns = [
 
     path('RegistroProductoFinanciero/',registroproductofinanciero,name='registroproductofinanciero'),
     path('MisProductosFinancieros/',misproductosfinancieros,name='misproductosfinancieros'),
+
     path('RegistroIngreso/',registroingreso,name='registroingreso'),
+    path('EliminarIngreso/',eliminaringreso,name='eliminaringreso'),
     path('MisIngresos/<int:anno>/<int:mes>/',misingresos,name='misingresos'),
+
+
+
     path('Balance/<int:anno>/<int:mes>/',balance,name='balance'),
     path('Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
-
 
 ]

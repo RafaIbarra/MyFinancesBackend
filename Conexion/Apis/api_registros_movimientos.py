@@ -11,7 +11,7 @@ import time
 from django.utils import timezone
 import ast
 from datetime import datetime
-
+from Conexion.Apis.listados.datos import datos_egresos,datos_ingresos,datos_balance,datos_resumen
 @api_view(['POST'])
 def registroegreso(request):
 
@@ -42,7 +42,7 @@ def registroegreso(request):
         egreso_serializer=EgresosSerializers(data=datasave)
         if egreso_serializer.is_valid():
             egreso_serializer.save()
-            data=datos_balance(id_user,anno,mes)
+            data=datos_resumen(id_user,anno,mes)
             return Response(data,status= status.HTTP_200_OK)
 
         return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
@@ -56,18 +56,31 @@ def eliminaregreso(request):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
-            
+         
+        # fecha_obj = datetime.strptime(timezone.now(), '%Y-%m-%d')
+        anno=timezone.now().year
+        mes=timezone.now().month
         gastosdel=request.data['gastos']
-        
+
+        if type(gastosdel)==str:
+            gastosdel=ast.literal_eval(gastosdel)
+
         if len(gastosdel)>0:
             for item in gastosdel:
                 condicion1 = Q(id__exact=item)
                 lista=Egresos.objects.filter(condicion1).values()
                 if lista:
+                
+                    anno=lista[0]['fecha_gasto'].year
+                    mes=lista[0]['fecha_gasto'].month
+                    
                     gasto = Egresos.objects.get(pk=item)
                     gasto.delete()
 
-            return Response({'message':'ok'},status= status.HTTP_200_OK)
+
+            data=datos_resumen(id_user,anno,mes)
+            return Response(data,status= status.HTTP_200_OK)
+            
         else:
             return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
     else:
@@ -79,25 +92,18 @@ def misegresos(request,anno,mes):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        condicion1 = Q(user_id__exact=id_user)
-        condicion2 = Q(fecha_gasto__year=anno)
-        condicion3 = Q(fecha_gasto__month=mes)
-        lista=Egresos.objects.filter(condicion1 & condicion2 & condicion3)
-                
-        if lista:
-            result_serializer=EgresosSerializers(lista,many=True)
-
-            if result_serializer.data:
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response([],status= status.HTTP_200_OK)
+    if resp==True:
+        lista_egresos=datos_egresos(id_user,anno,mes)
+        if lista_egresos:
+            lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
+            
+        return Response(lista_egresos,status= status.HTTP_200_OK)
+        
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
+
+
 
 
 @api_view(['POST'])
@@ -119,16 +125,58 @@ def registroingreso(request):
             "fecha_registro": timezone.now()
             
         }
+        fecha_obj = datetime.strptime(datasave['fecha_ingreso'], '%Y-%m-%d')
+        anno=fecha_obj.year
+        mes=fecha_obj.month
         data_list.append(datasave)
 
         ingreso_serializer=IngresosSerializers(data=datasave)
         if ingreso_serializer.is_valid():
             ingreso_serializer.save()
-            return Response(ingreso_serializer.data,status= status.HTTP_200_OK)
+            data=datos_resumen(id_user,anno,mes)
+            return Response(data,status= status.HTTP_200_OK)
 
         return Response({'message':ingreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
+def eliminaringreso(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+         
+        # fecha_obj = datetime.strptime(timezone.now(), '%Y-%m-%d')
+        anno=timezone.now().year
+        mes=timezone.now().month
+        ingresosdel=request.data['ingresos']
+
+        if type(ingresosdel)==str:
+            ingresosdel=ast.literal_eval(ingresosdel)
+
+        if len(ingresosdel)>0:
+            for item in ingresosdel:
+                condicion1 = Q(id__exact=item)
+                lista=Ingresos.objects.filter(condicion1).values()
+                if lista:
+                
+                    anno=lista[0]['fecha_ingreso'].year
+                    mes=lista[0]['fecha_ingreso'].month
+                    
+                    ingreso = Ingresos.objects.get(pk=item)
+                    ingreso.delete()
+
+
+            data=datos_resumen(id_user,anno,mes)
+            return Response(data,status= status.HTTP_200_OK)
+            
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+    else:
+         return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
     
 
 
@@ -137,21 +185,12 @@ def misingresos(request,anno,mes):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        condicion1 = Q(user_id__exact=id_user)
-        condicion2 = Q(fecha_ingreso__year=anno)
-        condicion3 = Q(fecha_ingreso__month=mes)
-        lista=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
-                
-        if lista:
-            result_serializer=IngresosSerializers(lista,many=True)
-
-            if result_serializer.data:
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response([],status= status.HTTP_200_OK)
+    if resp==True:
+        lista_ingresos=datos_ingresos(id_user,anno,mes)
+        if lista_ingresos:
+            lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
+            
+        return Response(lista_ingresos,status= status.HTTP_200_OK)      
+        
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
