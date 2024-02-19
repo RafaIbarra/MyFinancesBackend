@@ -20,9 +20,9 @@ def registroegreso(request):
     if resp==True:
         data_list = []
                     
-        
+        id_gasto=request.data['codgasto']
         datasave={
-            
+            "id":request.data['codgasto'],
             "gasto":  request.data['gasto'],
             "monto_gasto": request.data['monto'],
             "user": id_user,
@@ -32,14 +32,31 @@ def registroegreso(request):
             
         }
         
-
         fecha_obj = datetime.strptime(datasave['fecha_gasto'], '%Y-%m-%d')
 
         anno=fecha_obj.year
         mes=fecha_obj.month
+
         data_list.append(datasave)
-        
-        egreso_serializer=EgresosSerializers(data=datasave)
+        if id_gasto>0:
+            condicion1 = Q(id__exact=id_gasto)
+            dato_existente=Egresos.objects.filter(condicion1 )
+            
+
+            if dato_existente:
+                
+                existente=Egresos.objects.get(condicion1)
+                
+                egreso_serializer=EgresosSerializers(existente,data=datasave)
+
+            else:
+                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+            
+
+        else:
+
+            egreso_serializer=EgresosSerializers(data=datasave)
+
         if egreso_serializer.is_valid():
             egreso_serializer.save()
             data=datos_resumen(id_user,anno,mes)
@@ -114,9 +131,9 @@ def registroingreso(request):
     if resp==True:
         data_list = []
                     
-        
+        id_ingreso=request.data['codingreso']
         datasave={
-            
+            "id":request.data['codingreso'],
             "producto_financiero":  request.data['producto'],
             "monto_ingreso": request.data['monto'],
             "user": id_user,
@@ -129,8 +146,26 @@ def registroingreso(request):
         anno=fecha_obj.year
         mes=fecha_obj.month
         data_list.append(datasave)
+        if id_ingreso>0:
+            condicion1 = Q(id__exact=id_ingreso)
+            dato_existente=Ingresos.objects.filter(condicion1 )
+            
 
-        ingreso_serializer=IngresosSerializers(data=datasave)
+            if dato_existente:
+                
+                existente=Ingresos.objects.get(condicion1)
+                
+                ingreso_serializer=IngresosSerializers(existente,data=datasave)
+
+            else:
+                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+            
+
+        else:
+
+            ingreso_serializer=IngresosSerializers(data=datasave)
+
+
         if ingreso_serializer.is_valid():
             ingreso_serializer.save()
             data=datos_resumen(id_user,anno,mes)

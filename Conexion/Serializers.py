@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from Conexion.models import *
+from django.db.models import Q
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
 
@@ -39,6 +40,8 @@ class CategoriaGastosSerializers(serializers.ModelSerializer):
 class GastosSerializers(serializers.ModelSerializer):
     DescripcionTipoGasto=serializers.SerializerMethodField()
     DescripcionCategoriaGasto=serializers.SerializerMethodField()
+    TotalEgresos=serializers.SerializerMethodField()
+    CantidadRegistros=serializers.SerializerMethodField()
     class Meta:
         model=Gastos
         fields= ['id'
@@ -49,6 +52,8 @@ class GastosSerializers(serializers.ModelSerializer):
                  ,'user'
                  ,'nombre_gasto'
                 ,'fecha_registro'
+                ,'TotalEgresos'
+                ,'CantidadRegistros'
                 ]
         
 
@@ -68,6 +73,31 @@ class GastosSerializers(serializers.ModelSerializer):
             return tipo_operacion_obj.nombre_categoria
         except CategoriaGastos.DoesNotExist:
             return None
+        
+    def get_CantidadRegistros(self, obj):
+
+        
+        condicion1 = Q(user_id__exact=obj.user_id)
+        condicion2 = Q(gasto=obj.id)
+        mov=list(Egresos.objects.filter(condicion1 & condicion2 ).values())
+        if mov:
+            return len(mov)
+        else:
+            return 0
+        
+    def get_TotalEgresos(self, obj):
+
+        condicion1 = Q(user_id__exact=obj.user_id)
+        condicion2 = Q(gasto=obj.id)
+        mov=list(Egresos.objects.filter(condicion1 & condicion2 ).values())
+        if mov:
+            suma_total = sum(registro['monto_gasto'] for registro in mov)
+        else:
+            suma_total=0
+        
+        return suma_total
+        
+    
 
 
 class EgresosSerializers(serializers.ModelSerializer):
@@ -130,6 +160,9 @@ class TiposProductosFinancierosSerializers(serializers.ModelSerializer):
 
 class ProductosFinancierosSerializers(serializers.ModelSerializer):
     DescripcionTipoProducto=serializers.SerializerMethodField()
+    TotalIngresos=serializers.SerializerMethodField()
+    CantidadRegistros=serializers.SerializerMethodField()
+
     
     class Meta:
         model=ProductosFinancieros
@@ -139,6 +172,8 @@ class ProductosFinancierosSerializers(serializers.ModelSerializer):
                  ,'user'
                  ,'nombre_producto'
                 ,'fecha_registro'
+                ,'TotalIngresos'
+                ,'CantidadRegistros'
                 ]
         
 
@@ -150,6 +185,29 @@ class ProductosFinancierosSerializers(serializers.ModelSerializer):
             return tipo_producto_obj.nombre_tipo_producto
         except TiposProductosFinancieros.DoesNotExist:
             return None
+        
+    def get_CantidadRegistros(self, obj):
+
+        
+        condicion1 = Q(user_id__exact=obj.user_id)
+        condicion2 = Q(producto_financiero_id=obj.id)
+        mov=list(Ingresos.objects.filter(condicion1 & condicion2 ).values())
+        if mov:
+            return len(mov)
+        else:
+            return 0
+        
+    def get_TotalIngresos(self, obj):
+
+        condicion1 = Q(user_id__exact=obj.user_id)
+        condicion2 = Q(producto_financiero_id=obj.id)
+        mov=list(Ingresos.objects.filter(condicion1 & condicion2 ).values())
+        if mov:
+            suma_total = sum(registro['monto_ingreso'] for registro in mov)
+        else:
+            suma_total=0
+        
+        return suma_total
         
     
 

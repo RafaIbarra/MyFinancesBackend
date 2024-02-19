@@ -5,10 +5,16 @@ from Conexion.Serializers import EgresosSerializers,IngresosSerializers,BalanceS
 from django.utils import timezone
 
 def registros_ingresos(user,anno,mes):
-    condicion1 = Q(user_id__exact=user)
-    condicion2 = Q(fecha_ingreso__year=anno)
-    condicion3 = Q(fecha_ingreso__month=mes)
-    lista=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
+    
+    if anno>0:
+        condicion1 = Q(user_id__exact=user)
+        condicion2 = Q(fecha_ingreso__year=anno)
+        condicion3 = Q(fecha_ingreso__month=mes)
+        lista=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
+    else:
+        condicion1 = Q(user_id__exact=user)
+        lista=Ingresos.objects.filter(condicion1 )
+    
     
     if lista:
        return lista
