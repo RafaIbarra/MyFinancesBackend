@@ -56,7 +56,7 @@ class GastosSerializers(serializers.ModelSerializer):
                 ,'CantidadRegistros'
                 ]
         
-
+    fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     def get_DescripcionTipoGasto(self, obj):
         
         tipo_gasto = obj.retorno_tipo_gasto_id()
@@ -117,7 +117,7 @@ class EgresosSerializers(serializers.ModelSerializer):
                  ,'anotacion'
                 ,'fecha_registro'
                 ]
-        
+    fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     def get_NombreGasto(self, obj):
         
         cod_gasto = obj.retorno_gasto_id()
@@ -176,7 +176,7 @@ class ProductosFinancierosSerializers(serializers.ModelSerializer):
                 ,'CantidadRegistros'
                 ]
         
-
+    fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     def get_DescripcionTipoProducto(self, obj):
         
         tipo_producto = obj.retorno_tipo_producto_id()
@@ -227,7 +227,7 @@ class IngresosSerializers(serializers.ModelSerializer):
                  ,'anotacion'
                 ,'fecha_registro'
                 ]
-        
+    fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')  
     def get_NombreIngreso(self, obj):
         
         cod_producto = obj.retorno_producto_financiero_id()

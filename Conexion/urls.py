@@ -7,6 +7,7 @@ urlpatterns = [
     path('Meses/',meses,name='meses'),
 
     path('RegistroGasto/',registrogasto,name='registrogasto'),
+    path('EliminarGastos/',eliminargastos,name='eliminargastos'),
     path('MisGastos/',misgastos,name='misgastos'),
 
     path('RegistroEgreso/',registroegreso,name='registroegreso'),
@@ -14,6 +15,7 @@ urlpatterns = [
     path('MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
 
     path('RegistroProductoFinanciero/',registroproductofinanciero,name='registroproductofinanciero'),
+    path('EliminarProductos/',eliminarproductos,name='eliminarproductos'),
     path('MisProductosFinancieros/',misproductosfinancieros,name='misproductosfinancieros'),
 
     path('RegistroIngreso/',registroingreso,name='registroingreso'),
