@@ -122,6 +122,7 @@ def registroproductofinanciero(request):
     if resp==True:
         data_list = []
         id_producto=request.data['codigoproducto']
+        
         datasave={
             "id":  request.data['codigoproducto'],
             "tipoproducto":  request.data['tipoproducto'],
@@ -130,6 +131,7 @@ def registroproductofinanciero(request):
             "fecha_registro": timezone.now()
             
         }
+        print(datasave)
         data_list.append(datasave)
 
         if id_producto >0:
@@ -144,20 +146,25 @@ def registroproductofinanciero(request):
             else:
                 return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
         else:
+            print('guardara uno nuevo')
             producto_serializer=ProductosFinancierosSerializers(data=datasave)
 
             
 
         if producto_serializer.is_valid():
+            print('es valido')
             producto_serializer.save()
             condicion1 = Q(user_id__exact=id_user)
             lista=ProductosFinancieros.objects.filter(condicion1)
             result_serializer=ProductosFinancierosSerializers(lista,many=True)
             return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-        return Response({'message':producto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            print('No es valido')
+            print(producto_serializer.errors)
+            return Response({'message':producto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
     else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
 @api_view(['POST'])

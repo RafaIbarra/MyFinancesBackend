@@ -29,7 +29,7 @@ from Conexion.Serializers import CustomTokenObtainPairSerializer,UsuariosSeriali
 from Conexion.models import Usuarios,SesionesActivas
 from MyFinancesBackend.settings import TIEMPO_SESION_HORAS
 from Conexion.validaciones import resgistrosesion
-
+import re
 
 
 class Login(TokenObtainPairView):
@@ -59,6 +59,8 @@ class Login(TokenObtainPairView):
                 t.delete()
 
         user = authenticate(username=user_name,password=password)
+        print("el autenticate")
+        print(user)
         if user:
             user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
             
@@ -78,7 +80,7 @@ class Login(TokenObtainPairView):
                     
                     'Estado':1
                 })
-                print(datasesion)
+               
                 sesion_serializers=SesionesActivasSerializers(data=datasesion)
                 if sesion_serializers.is_valid():
                     
@@ -89,11 +91,6 @@ class Login(TokenObtainPairView):
                 login_serializer = self.serializer_class(data=request.data)
                 if login_serializer.is_valid():
                     
-                   
-
-                    # user_serializer = CustomUserSerializer(user)
-                    
-
                     return Response({
                         'token': login_serializer.validated_data.get('access'),
                         'refresh': login_serializer.validated_data.get('refresh'),
@@ -121,67 +118,73 @@ class Registro(TokenObtainPairView):
         user = request.data.get('user', '')
         correo = request.data.get('correo', '')
         password = request.data.get('password', '')
+        password=password.replace(" ", "")
+        user_reg=formato_user(user)
         try:
             data_user=(
                 {
                     'nombre_usuario':nombre,
                     'apellido_usuario':apellido,
                     'fecha_nacimiento':nacimiento,
-                    'user_name':user,
+                    'user_name':user_reg,
                     'correo':correo,
                     'ultima_conexion':timezone.now(),
                     'fecha_registro':timezone.now()
                 }
             )
+            print(data_user)
             user_serializer=UsuariosSerializer(data=data_user)
             if user_serializer.is_valid():
                 user_serializer.save()
-                user = User.objects.create_user(user, password=password)
-                user.save()
+                user_registrar = User.objects.create_user(user_reg, password=password)
+                user_registrar.save()
                 user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
-           
-                token,created=Token.objects.get_or_create(user=user)
-            
+                print('debe crear el token')
+                
+                # datos_usuario=User.objects.filter(username__exact=user_reg).values()
+                # datos_usuario=list(datos_usuario)
+                
+                # id_user_reg=datos_usuario[0]['id']
+                
+                token,created=Token.objects.get_or_create(user=user_registrar)
+                print('el token')
+                print(token)
                 datasesion=({
-                    'user_name':user,
+                    'user_name':user_reg,
                     'fecha_conexion':timezone.now(),
                     'expiracion_conexion':timezone.now() + timedelta(hours=TIEMPO_SESION_HORAS),
                     'token_session':token.key,
                     'dispositivo':user_agent,
+                    'Estado':1
                 })
+
                 sesion_serializers=SesionesActivasSerializers(data=datasesion)
                 if sesion_serializers.is_valid():
                     
                     sesion_serializers.save()
+                else:
+                    print(sesion_serializers.errors)
                 
-                    dataserializer={
-                        'username':user,
-                        'password':password,
-                    }
-                    login_serializer = self.serializer_class(data=dataserializer)
-                    if login_serializer.is_valid():
-                        
-                        
-                        try:
-                            
-
-
-                            user_serializer = CustomUserSerializer(user)
-
-                            
-                            return Response({
-                                'token': login_serializer.validated_data.get('access'),
-                                'refresh-token': login_serializer.validated_data.get('refresh'),
-                                'sesion':token.key,
-                                'user': user_serializer.data.get('username'),
-                                
-                                'message': 'Usuario creado, Inicio de Sesion Existoso'
-                            }, status=status.HTTP_200_OK)
-
-                        except Exception as e:
-                            
-                            return Response({'message':e.args},status= status.HTTP_406_NOT_ACCEPTABLE)
+                datalogin={
+                    'username':user_reg,
+                    'password':password
+                
+                }
+                print('datalogin')
+                print(datalogin)
+                login_serializer = self.serializer_class(data=datalogin)
+                if login_serializer.is_valid():
                     
+                    return Response({
+                        'token': login_serializer.validated_data.get('access'),
+                        'refresh': login_serializer.validated_data.get('refresh'),
+                        'sesion':token.key,
+                        
+                        'message': 'Inicio de Sesion Existoso'
+                    }, status=status.HTTP_200_OK)
+                return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
+                
+
              
         except IntegrityError:
              return Response({'message':'Error de creacion'},status= status.HTTP_400_BAD_REQUEST)
@@ -199,3 +202,15 @@ class NotFoundView(APIView):
 
     def post(self, request, *args, **kwargs):
         return Response({"message": "La ruta solicitada no se encuentra"}, status=status.HTTP_404_NOT_FOUND)
+
+
+def formato_user(data):
+    
+    data = data.replace(" ", "")
+    
+    # Poner en minúsculas
+    data = data.lower()
+    
+    # Quitar caracteres especiales utilizando expresiones regulares
+    data = re.sub(r'[^a-zA-Z0-9]', '', data)
+    return data

@@ -49,7 +49,7 @@ class Gastos(models.Model):
     tipogasto=models.ForeignKey(TiposGastos, on_delete=models.CASCADE)
     categoria=models.ForeignKey(CategoriaGastos, on_delete=models.CASCADE)
     user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
-    nombre_gasto=models.CharField(max_length=200,blank=False,unique=True)
+    nombre_gasto=models.CharField(max_length=200,blank=False)
     fecha_registro=models.DateTimeField("fecha registro")
 
     class Meta:
@@ -99,7 +99,7 @@ class ProductosFinancieros(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
     tipoproducto=models.ForeignKey(TiposProductosFinancieros, on_delete=models.CASCADE)
     user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
-    nombre_producto=models.CharField(max_length=200,blank=False,unique=True)
+    nombre_producto=models.CharField(max_length=200,blank=False)
     fecha_registro=models.DateTimeField("fecha registro")
 
     class Meta:
