@@ -95,7 +95,7 @@ class Login(TokenObtainPairView):
                         'token': login_serializer.validated_data.get('access'),
                         'refresh': login_serializer.validated_data.get('refresh'),
                         'sesion':token.key,
-                        
+                        'user_name':user_name.capitalize(),
                         'message': 'Inicio de Sesion Existoso'
                     }, status=status.HTTP_200_OK)
                 return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
@@ -179,7 +179,7 @@ class Registro(TokenObtainPairView):
                         'token': login_serializer.validated_data.get('access'),
                         'refresh': login_serializer.validated_data.get('refresh'),
                         'sesion':token.key,
-                        
+                        'user_name':user_reg.capitalize(),
                         'message': 'Inicio de Sesion Existoso'
                     }, status=status.HTTP_200_OK)
                 return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
