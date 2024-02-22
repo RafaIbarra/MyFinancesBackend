@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from Conexion.models import *
 from django.db.models import Q
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
 
@@ -104,6 +105,8 @@ class EgresosSerializers(serializers.ModelSerializer):
     NombreGasto=serializers.SerializerMethodField()
     TipoGasto=serializers.SerializerMethodField()
     CategoriaGasto=serializers.SerializerMethodField()
+    MesEgreso=serializers.SerializerMethodField()
+    AnnoEgreso=serializers.SerializerMethodField()
     class Meta:
         model=Egresos
         fields= ['id'
@@ -116,6 +119,8 @@ class EgresosSerializers(serializers.ModelSerializer):
                  ,'fecha_gasto'
                  ,'anotacion'
                 ,'fecha_registro'
+                ,'MesEgreso'
+                ,'AnnoEgreso'
                 ]
     fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     def get_NombreGasto(self, obj):
@@ -148,6 +153,12 @@ class EgresosSerializers(serializers.ModelSerializer):
             return tipo_operacion_obj.nombre_categoria
         except CategoriaGastos.DoesNotExist:
             return None
+        
+    def get_MesEgreso(self, obj):
+        return obj.fecha_gasto.month
+    
+    def get_AnnoEgreso(self, obj):
+        return obj.fecha_gasto.year
         
 
 
@@ -214,6 +225,8 @@ class ProductosFinancierosSerializers(serializers.ModelSerializer):
 class IngresosSerializers(serializers.ModelSerializer):
     NombreIngreso=serializers.SerializerMethodField()
     TipoIngreso=serializers.SerializerMethodField()
+    MesIngreso=serializers.SerializerMethodField()
+    AnnoIngreso=serializers.SerializerMethodField()
     
     class Meta:
         model=Ingresos
@@ -226,6 +239,8 @@ class IngresosSerializers(serializers.ModelSerializer):
                  ,'fecha_ingreso'
                  ,'anotacion'
                 ,'fecha_registro'
+                ,'MesIngreso'
+                ,'AnnoIngreso'
                 ]
     fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')  
     def get_NombreIngreso(self, obj):
@@ -247,6 +262,12 @@ class IngresosSerializers(serializers.ModelSerializer):
             return tipo_operacion_obj.nombre_tipo_producto
         except TiposGastos.DoesNotExist:
             return None
+        
+    def get_MesIngreso(self, obj):
+        return obj.fecha_ingreso.month
+    
+    def get_AnnoIngreso(self, obj):
+        return obj.fecha_ingreso.year
         
  
 class BalanceSerializers(serializers.Serializer):

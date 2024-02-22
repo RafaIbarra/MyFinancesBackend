@@ -145,35 +145,38 @@ def registroingreso(request):
         fecha_obj = datetime.strptime(datasave['fecha_ingreso'], '%Y-%m-%d')
         anno=fecha_obj.year
         mes=fecha_obj.month
-        data_list.append(datasave)
-        if id_ingreso>0:
-            condicion1 = Q(id__exact=id_ingreso)
-            dato_existente=Ingresos.objects.filter(condicion1 )
-            
+        if datasave['monto_ingreso']>0:
+            data_list.append(datasave)
+            if id_ingreso>0:
+                condicion1 = Q(id__exact=id_ingreso)
+                dato_existente=Ingresos.objects.filter(condicion1 )
+                
 
-            if dato_existente:
+                if dato_existente:
+                    
+                    existente=Ingresos.objects.get(condicion1)
+                    
+                    ingreso_serializer=IngresosSerializers(existente,data=datasave)
+
+                else:
+                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
                 
-                existente=Ingresos.objects.get(condicion1)
-                
-                ingreso_serializer=IngresosSerializers(existente,data=datasave)
 
             else:
-                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
-            
 
+                ingreso_serializer=IngresosSerializers(data=datasave)
+
+
+            if ingreso_serializer.is_valid():
+                ingreso_serializer.save()
+                data=datos_resumen(id_user,anno,mes)
+                return Response(data,status= status.HTTP_200_OK)
+
+            return Response({'message':ingreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         else:
-
-            ingreso_serializer=IngresosSerializers(data=datasave)
-
-
-        if ingreso_serializer.is_valid():
-            ingreso_serializer.save()
-            data=datos_resumen(id_user,anno,mes)
-            return Response(data,status= status.HTTP_200_OK)
-
-        return Response({'message':ingreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'El monto no puede ser menor a 1'},status= status.HTTP_400_BAD_REQUEST)
     else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
 @api_view(['POST'])
