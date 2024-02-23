@@ -14,11 +14,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import base64
-from Conexion.obtener_datos_token import obtener_datos_token
-from Conexion.validaciones import validacionpeticion
+from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
+from Conexion.Seguridad.validaciones import validacionpeticion
 from tempfile import NamedTemporaryFile
 from  Conexion.models import Egresos, Ingresos
-from  Conexion.Serializers import EgresosSerializers, IngresosSerializers,BalanceSerializers
+# from  Conexion.Serializers import EgresosSerializers, IngresosSerializers,BalanceSerializers
+from Conexion.Serializadores.EgresosSerializers import *
+from Conexion.Serializadores.IngresosSerializers import *
+from Conexion.Serializadores.BalanceSerializers import *
 @api_view(['POST'])
 def graf_balance(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)

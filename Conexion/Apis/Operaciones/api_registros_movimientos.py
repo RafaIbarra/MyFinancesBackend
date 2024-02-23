@@ -2,16 +2,18 @@ from rest_framework.response import Response
 from rest_framework import status  
 from rest_framework.decorators import api_view
 from django.db.models import Q
-from Conexion.Serializers import EgresosSerializers,IngresosSerializers
+# from Conexion.Serializers import EgresosSerializers,IngresosSerializers
+from Conexion.Serializadores.EgresosSerializers import *
+from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.models import Egresos,Ingresos
-from Conexion.obtener_datos_token import obtener_datos_token
-from Conexion.validaciones import validacionpeticion
-from Conexion.Apis.listados.datos import datos_balance
+from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
+from Conexion.Seguridad.validaciones import validacionpeticion
+
 import time
 from django.utils import timezone
 import ast
 from datetime import datetime
-from Conexion.Apis.listados.datos import datos_egresos,datos_ingresos,datos_balance,datos_resumen
+from Conexion.Apis.api_generacion_datos import datos_resumen
 @api_view(['POST'])
 def registroegreso(request):
 
@@ -19,7 +21,7 @@ def registroegreso(request):
     resp=validacionpeticion(token_sesion)
     if resp==True:
         data_list = []
-                    
+        data_errores=''
         id_gasto=request.data['codgasto']
         datasave={
             "id":request.data['codgasto'],
@@ -32,37 +34,56 @@ def registroegreso(request):
             
         }
         
-        fecha_obj = datetime.strptime(datasave['fecha_gasto'], '%Y-%m-%d')
-
-        anno=fecha_obj.year
-        mes=fecha_obj.month
-
-        data_list.append(datasave)
-        if id_gasto>0:
-            condicion1 = Q(id__exact=id_gasto)
-            dato_existente=Egresos.objects.filter(condicion1 )
+        if validaciones_registros(request.data,'fecha_operacion'):
+            fecha_obj = datetime.strptime(datasave['fecha_gasto'], '%Y-%m-%d')
+            anno=fecha_obj.year
+            mes=fecha_obj.month
+        else: 
+            mensaje='Seleccione una fecha'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+        
+        
             
+        if validaciones_registros(datasave['monto_gasto'],'monto')==False:
+            mensaje='El monto no puede ser menor a 1'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
-            if dato_existente:
+
+        if validaciones_registros(request.data['gasto'],'gastos')==False:
+            mensaje='Selecione el concepto de egreso'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+        
+        if len(data_errores)==0:
+
+            data_list.append(datasave)
+            if id_gasto>0:
+                condicion1 = Q(id__exact=id_gasto)
+                dato_existente=Egresos.objects.filter(condicion1 )
                 
-                existente=Egresos.objects.get(condicion1)
+
+                if dato_existente:
+                    
+                    existente=Egresos.objects.get(condicion1)
+                    
+                    egreso_serializer=EgresosSerializers(existente,data=datasave)
+
+                else:
+                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
                 
-                egreso_serializer=EgresosSerializers(existente,data=datasave)
 
             else:
-                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
-            
 
+                egreso_serializer=EgresosSerializers(data=datasave)
+
+            if egreso_serializer.is_valid():
+                egreso_serializer.save()
+                data=datos_resumen(id_user,anno,mes)
+                return Response(data,status= status.HTTP_200_OK)
+
+            return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         else:
-
-            egreso_serializer=EgresosSerializers(data=datasave)
-
-        if egreso_serializer.is_valid():
-            egreso_serializer.save()
-            data=datos_resumen(id_user,anno,mes)
-            return Response(data,status= status.HTTP_200_OK)
-
-        return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
@@ -104,25 +125,8 @@ def eliminaregreso(request):
          return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
-@api_view(['POST'])
-def misegresos(request,anno,mes):
 
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:
-        lista_egresos=datos_egresos(id_user,anno,mes)
-        if lista_egresos:
-            lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
-            
-        return Response(lista_egresos,status= status.HTTP_200_OK)
-        
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
-
-
-
-
 @api_view(['POST'])
 def registroingreso(request):
 
@@ -142,10 +146,31 @@ def registroingreso(request):
             "fecha_registro": timezone.now()
             
         }
-        fecha_obj = datetime.strptime(datasave['fecha_ingreso'], '%Y-%m-%d')
-        anno=fecha_obj.year
-        mes=fecha_obj.month
-        if datasave['monto_ingreso']>0:
+        data_errores=''
+        
+        
+
+        if validaciones_registros(request.data,'fecha_operacion'):
+            fecha_obj = datetime.strptime(datasave['fecha_ingreso'], '%Y-%m-%d')
+            anno=fecha_obj.year
+            mes=fecha_obj.month
+        else: 
+            mensaje='Seleccione una fecha'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+        
+        
+            
+        if validaciones_registros(datasave['monto_ingreso'],'monto')==False:
+            mensaje='El monto no puede ser menor a 1'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+        if validaciones_registros(request.data['producto'],'productos')==False:
+            mensaje='Selecione el concepto de ingreso'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+        
+        if len(data_errores)==0:
             data_list.append(datasave)
             if id_ingreso>0:
                 condicion1 = Q(id__exact=id_ingreso)
@@ -171,10 +196,12 @@ def registroingreso(request):
                 ingreso_serializer.save()
                 data=datos_resumen(id_user,anno,mes)
                 return Response(data,status= status.HTTP_200_OK)
+            
+
 
             return Response({'message':ingreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'error':'El monto no puede ser menor a 1'},status= status.HTTP_400_BAD_REQUEST)
+            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
@@ -215,20 +242,40 @@ def eliminaringreso(request):
     else:
          return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
-    
 
-
-@api_view(['POST'])
-def misingresos(request,anno,mes):
-
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:
-        lista_ingresos=datos_ingresos(id_user,anno,mes)
-        if lista_ingresos:
-            lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
-            
-        return Response(lista_ingresos,status= status.HTTP_200_OK)      
+def validaciones_registros(valor,tipo):
+    if tipo=='monto':
+        if valor is None or valor<1:
+            return False
+        else:
+            return True
         
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    if tipo=='fecha_operacion':
+        
+        if valor is None:
+            return False
+        else:
+            fecha = valor.get('fecha')
+            if 'fecha' in valor and bool(fecha):
+                return True
+            else:
+                return False
+        
+        
+    if tipo=='productos':
+        consultaproducto=ProductosFinancieros.objects.filter(id__exact=valor).values()
+        if not consultaproducto:
+            return False
+        else:
+            return True
+        
+    if tipo=='gastos':
+        consultagasto=Gastos.objects.filter(id__exact=valor).values()
+        if not consultagasto:
+            return False
+        else:
+            return True
+
+
+
+

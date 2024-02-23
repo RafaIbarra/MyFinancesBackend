@@ -25,10 +25,13 @@ from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.db.models import Q
 
-from Conexion.Serializers import CustomTokenObtainPairSerializer,UsuariosSerializer,SesionesActivasSerializers,CustomUserSerializer
+# from Conexion.Serializers import CustomTokenObtainPairSerializer,UsuariosSerializer,SesionesActivasSerializers,CustomUserSerializer
+from Conexion.Serializadores.CustomsSerializers import *
+from Conexion.Serializadores.SesionesActivasSerializers import *
+from Conexion.Serializadores.UsuariosSerializers import *
 from Conexion.models import Usuarios,SesionesActivas
 from MyFinancesBackend.settings import TIEMPO_SESION_HORAS
-from Conexion.validaciones import resgistrosesion
+from Conexion.Seguridad.validaciones import resgistrosesion
 import re
 
 

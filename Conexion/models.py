@@ -80,8 +80,6 @@ class Egresos(models.Model):
     def retorno_gasto_id(self):
         return self.gasto_id
 
-
-
 class TiposProductosFinancieros(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
     nombre_tipo_producto=models.CharField(max_length=200,blank=False,unique=True)

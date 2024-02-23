@@ -7,13 +7,126 @@ from rest_framework.decorators import api_view
 import pandas as pd
 
 
-from Conexion.obtener_datos_token import obtener_datos_token
-from Conexion.validaciones import validacionpeticion
+from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
+from Conexion.Seguridad.validaciones import validacionpeticion
 
-from Conexion.models import Egresos, Ingresos
-from Conexion.Serializers import EgresosSerializers, IngresosSerializers,BalanceSerializers,ResumenSerializers
-from Conexion.Apis.listados.datos import registros_egresos,registros_ingresos,datos_resumen,datos_balance
+from Conexion.models import Gastos,Meses,ProductosFinancieros
+# from Conexion.Serializers import GastosSerializers,MesesSerializers,ProductosFinancierosSerializers
+from Conexion.Serializadores.GastosSerializers import *
+from Conexion.Serializadores.MesesSerializers import *
+from Conexion.Serializadores.ProductosFinancierosSerializers import *
+from Conexion.Apis.api_generacion_datos import *
 
+
+@api_view(['POST'])
+def misingresos(request,anno,mes):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_ingresos=datos_ingresos(id_user,anno,mes)
+        if lista_ingresos:
+            lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
+            
+        return Response(lista_ingresos,status= status.HTTP_200_OK)      
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def misegresos(request,anno,mes):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_egresos=datos_egresos(id_user,anno,mes)
+        if lista_egresos:
+            lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
+            
+        return Response(lista_egresos,status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def misgastos(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:           
+        condicion1 = Q(user_id__exact=id_user)
+        # lista=Gastos.objects.filter(condicion1)
+        lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
+        # cadena='aabc'
+        # cadena='acbbac'
+        cadena='aaacbaabca'
+        cadenabandera=''
+        letraponer=''
+        nuevacadena=''
+        repetidos=''
+        contador=1
+
+        for item in cadena:
+            
+            
+            if contador==1:
+                cadenabandera=cadenabandera + item
+                
+            else:
+            
+                if item in cadenabandera:
+                    cadenabandera=cadenabandera.replace(item,'')
+                    repetidos=repetidos + item
+
+                else:
+                    if item not in repetidos:    
+                        cadenabandera=cadenabandera + item
+
+            if len(cadenabandera)>0:
+                letraponer = cadenabandera[0:1]
+            else:
+                letraponer='-1'
+            
+            contador=contador +1
+            nuevacadena=nuevacadena+letraponer
+            
+
+        print('cadena entrada-> ' + cadena)
+        print('cadena salida-> '+ nuevacadena)
+        if lista:
+            result_serializer=GastosSerializers(lista,many=True)
+
+            if result_serializer.data:
+                return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response([],status= status.HTTP_200_OK)
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+@api_view(['POST'])
+def misproductosfinancieros(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:           
+        condicion1 = Q(user_id__exact=id_user)
+        lista=ProductosFinancieros.objects.filter(condicion1)
+                
+        if lista:
+            result_serializer=ProductosFinancierosSerializers(lista,many=True)
+
+            if result_serializer.data:
+                return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response([],status= status.HTTP_200_OK)
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+    
 @api_view(['POST'])
 def resumen(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)
@@ -43,3 +156,28 @@ def balance(request,anno,mes):
         
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['POST'])
+def meses(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:           
+        
+        
+        lista = Meses.objects.order_by('numero_mes')
+
+                
+        if lista:
+            result_serializer=MesesSerializers(lista,many=True)
+
+            if result_serializer.data:
+                return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response([],status= status.HTTP_200_OK)
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)

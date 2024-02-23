@@ -1,7 +1,11 @@
 from django.db.models import Q
 import pandas as pd
 from  Conexion.models import Egresos, Ingresos
-from Conexion.Serializers import EgresosSerializers,IngresosSerializers,BalanceSerializers,ResumenSerializers
+# from Conexion.Serializers import EgresosSerializers,IngresosSerializers,BalanceSerializers,ResumenSerializers
+from Conexion.Serializadores.EgresosSerializers import *
+from Conexion.Serializadores.IngresosSerializers import *
+from Conexion.Serializadores.BalanceSerializers import *
+from Conexion.Serializadores.ResumenSerializers import *
 from django.utils import timezone
 
 def registros_ingresos(user,anno,mes):

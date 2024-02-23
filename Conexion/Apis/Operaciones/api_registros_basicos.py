@@ -2,10 +2,13 @@ from rest_framework.response import Response
 from rest_framework import status  
 from rest_framework.decorators import api_view
 from django.db.models import Q
-from Conexion.Serializers import GastosSerializers,ProductosFinancierosSerializers,MesesSerializers
+# from Conexion.Serializers import GastosSerializers,ProductosFinancierosSerializers,MesesSerializers
+from Conexion.Serializadores.GastosSerializers import *
+from Conexion.Serializadores.ProductosFinancierosSerializers import *
+from Conexion.Serializadores.MesesSerializers import *
 from Conexion.models import Gastos,ProductosFinancieros,Meses
-from Conexion.obtener_datos_token import obtener_datos_token
-from Conexion.validaciones import validacionpeticion
+from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
+from Conexion.Seguridad.validaciones import validacionpeticion
 import time
 import ast
 from django.utils import timezone
@@ -87,65 +90,6 @@ def eliminargastos(request):
 
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
-
-@api_view(['POST'])
-def misgastos(request):
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        condicion1 = Q(user_id__exact=id_user)
-        # lista=Gastos.objects.filter(condicion1)
-        lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
-        # cadena='aabc'
-        # cadena='acbbac'
-        cadena='aaacbaabca'
-        cadenabandera=''
-        letraponer=''
-        nuevacadena=''
-        repetidos=''
-        contador=1
-
-        for item in cadena:
-            
-            
-            if contador==1:
-                cadenabandera=cadenabandera + item
-                
-            else:
-            
-                if item in cadenabandera:
-                    cadenabandera=cadenabandera.replace(item,'')
-                    repetidos=repetidos + item
-
-                else:
-                    if item not in repetidos:    
-                        cadenabandera=cadenabandera + item
-
-            if len(cadenabandera)>0:
-                letraponer = cadenabandera[0:1]
-            else:
-                letraponer='-1'
-            
-            contador=contador +1
-            nuevacadena=nuevacadena+letraponer
-            
-
-        print('cadena entrada-> ' + cadena)
-        print('cadena salida-> '+ nuevacadena)
-        if lista:
-            result_serializer=GastosSerializers(lista,many=True)
-
-            if result_serializer.data:
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response([],status= status.HTTP_200_OK)
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
-
-
 
 
 @api_view(['POST'])
@@ -234,49 +178,6 @@ def eliminarproductos(request):
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
-@api_view(['POST'])
-def misproductosfinancieros(request):
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        condicion1 = Q(user_id__exact=id_user)
-        lista=ProductosFinancieros.objects.filter(condicion1)
-                
-        if lista:
-            result_serializer=ProductosFinancierosSerializers(lista,many=True)
-
-            if result_serializer.data:
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response([],status= status.HTTP_200_OK)
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
-    
 
 
-@api_view(['POST'])
-def meses(request):
 
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        
-        
-        lista = Meses.objects.order_by('numero_mes')
-
-                
-        if lista:
-            result_serializer=MesesSerializers(lista,many=True)
-
-            if result_serializer.data:
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response([],status= status.HTTP_200_OK)
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
