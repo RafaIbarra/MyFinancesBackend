@@ -1,21 +1,19 @@
 from datetime import  timedelta
+from datetime import datetime
 from django.utils import timezone
+
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
 from rest_framework import status
-from rest_framework.generics import GenericAPIView
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-
-
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
 
@@ -44,44 +42,37 @@ class Login(TokenObtainPairView):
         
         password = request.data.get('password', '')
         registro_sesion=resgistrosesion(user_name)
-        print(registro_sesion)
-        if registro_sesion:
-            
-            SesionesActivas.objects.filter(user_name__exact=user_name).update(Estado=0)
-            
-
-        condicion1=Q(user_name__exact=user_name)  
-        tokenusuario=SesionesActivas.objects.filter(condicion1).values()
         
-        for item in tokenusuario:
-            datotoken=(item['token_session'])
-            condticiontoken=Q(key__exact=datotoken)
-            existetoken=Token.objects.filter(condticiontoken).values()
-            if existetoken:
-                t=Token.objects.get(key=datotoken)
-                t.delete()
+        if registro_sesion:
 
+            condicion1=Q(user_name__exact=user_name)  
+            tokenusuario=SesionesActivas.objects.filter(condicion1).values()
+            
+            for item in tokenusuario:
+                datotoken=(item['token_session'])
+                condticiontoken=Q(key__exact=datotoken)
+                existetoken=Token.objects.filter(condticiontoken).values()
+                if existetoken:
+                    t=Token.objects.get(key=datotoken)
+                    t.delete()
+            
+            SesionesActivas.objects.filter(user_name__iexact=user_name).delete()
+            
         user = authenticate(username=user_name,password=password)
-        print("el autenticate")
-        print(user)
+        
         if user:
             user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
             
             token,created=Token.objects.get_or_create(user=user)
-            print('EL token: ', token)
+        
             
             try:
-                
-
-                
+        
                 datasesion=({
                     'user_name':user_name,
-                    'fecha_conexion':timezone.now(),
-                    'expiracion_conexion':timezone.now() + timedelta(hours=TIEMPO_SESION_HORAS),
+                    'fecha_conexion':datetime.now(),
                     'token_session':token.key,
-                    'dispositivo':user_agent,
-                    
-                    'Estado':1
+                    'dispositivo':user_agent
                 })
                
                 sesion_serializers=SesionesActivasSerializers(data=datasesion)
@@ -131,34 +122,30 @@ class Registro(TokenObtainPairView):
                     'fecha_nacimiento':nacimiento,
                     'user_name':user_reg,
                     'correo':correo,
-                    'ultima_conexion':timezone.now(),
-                    'fecha_registro':timezone.now()
+                    'ultima_conexion':datetime.now(),
+                    'fecha_registro':datetime.now()
                 }
             )
-            print(data_user)
+            
             user_serializer=UsuariosSerializer(data=data_user)
             if user_serializer.is_valid():
                 user_serializer.save()
                 user_registrar = User.objects.create_user(user_reg, password=password)
                 user_registrar.save()
                 user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
-                print('debe crear el token')
                 
-                # datos_usuario=User.objects.filter(username__exact=user_reg).values()
-                # datos_usuario=list(datos_usuario)
                 
-                # id_user_reg=datos_usuario[0]['id']
+            
                 
                 token,created=Token.objects.get_or_create(user=user_registrar)
-                print('el token')
-                print(token)
+               
                 datasesion=({
                     'user_name':user_reg,
-                    'fecha_conexion':timezone.now(),
-                    'expiracion_conexion':timezone.now() + timedelta(hours=TIEMPO_SESION_HORAS),
+                    'fecha_conexion':datetime.now(),
+                    
                     'token_session':token.key,
                     'dispositivo':user_agent,
-                    'Estado':1
+                    
                 })
 
                 sesion_serializers=SesionesActivasSerializers(data=datasesion)
@@ -173,8 +160,7 @@ class Registro(TokenObtainPairView):
                     'password':password
                 
                 }
-                print('datalogin')
-                print(datalogin)
+                
                 login_serializer = self.serializer_class(data=datalogin)
                 if login_serializer.is_valid():
                     

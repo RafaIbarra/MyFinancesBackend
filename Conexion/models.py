@@ -1,6 +1,5 @@
 from django.db import models
-from datetime import date 
-from django.utils import timezone
+
 # Create your models here.
 class Usuarios(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
@@ -64,6 +63,8 @@ class Gastos(models.Model):
     
     def retorno_categoria_gasto_id(self):
         return self.categoria_id
+    
+    
         
 class Egresos(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
@@ -129,10 +130,9 @@ class SesionesActivas(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
     user_name=models.CharField(max_length=100,blank=False)
     fecha_conexion=models.DateTimeField("fecha ultma conexion")
-    expiracion_conexion=models.DateTimeField(default=timezone.now())
     token_session=models.CharField(max_length=100,blank=True)
     dispositivo=models.CharField(max_length=200,blank=True)
-    Estado= models.IntegerField()
+    
     class Meta:
         db_table="SesionesActivas"
 
@@ -151,3 +151,5 @@ class Meses(models.Model):
 
     def __str__(self):
         return (f"{self.nombre_mes.capitalize()} , {self.nombre_mes.capitalize()}")
+
+

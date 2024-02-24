@@ -56,42 +56,6 @@ def misgastos(request):
         condicion1 = Q(user_id__exact=id_user)
         # lista=Gastos.objects.filter(condicion1)
         lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
-        # cadena='aabc'
-        # cadena='acbbac'
-        cadena='aaacbaabca'
-        cadenabandera=''
-        letraponer=''
-        nuevacadena=''
-        repetidos=''
-        contador=1
-
-        for item in cadena:
-            
-            
-            if contador==1:
-                cadenabandera=cadenabandera + item
-                
-            else:
-            
-                if item in cadenabandera:
-                    cadenabandera=cadenabandera.replace(item,'')
-                    repetidos=repetidos + item
-
-                else:
-                    if item not in repetidos:    
-                        cadenabandera=cadenabandera + item
-
-            if len(cadenabandera)>0:
-                letraponer = cadenabandera[0:1]
-            else:
-                letraponer='-1'
-            
-            contador=contador +1
-            nuevacadena=nuevacadena+letraponer
-            
-
-        print('cadena entrada-> ' + cadena)
-        print('cadena salida-> '+ nuevacadena)
         if lista:
             result_serializer=GastosSerializers(lista,many=True)
 

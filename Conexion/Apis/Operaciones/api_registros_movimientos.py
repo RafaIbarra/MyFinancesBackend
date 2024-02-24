@@ -30,7 +30,7 @@ def registroegreso(request):
             "user": id_user,
             "fecha_gasto": request.data['fecha'],
             "anotacion": request.data['anotacion'],
-            "fecha_registro": timezone.now()
+            "fecha_registro": datetime.now()
             
         }
         
@@ -95,9 +95,9 @@ def eliminaregreso(request):
     resp=validacionpeticion(token_sesion)
     if resp==True:
          
-        # fecha_obj = datetime.strptime(timezone.now(), '%Y-%m-%d')
-        anno=timezone.now().year
-        mes=timezone.now().month
+
+        anno=datetime.now().year
+        mes=datetime.now().month
         gastosdel=request.data['gastos']
 
         if type(gastosdel)==str:
@@ -143,7 +143,7 @@ def registroingreso(request):
             "user": id_user,
             "fecha_ingreso": request.data['fecha'],
             "anotacion": request.data['anotacion'],
-            "fecha_registro": timezone.now()
+            "fecha_registro": datetime.now()
             
         }
         data_errores=''
@@ -213,9 +213,9 @@ def eliminaringreso(request):
     resp=validacionpeticion(token_sesion)
     if resp==True:
          
-        # fecha_obj = datetime.strptime(timezone.now(), '%Y-%m-%d')
-        anno=timezone.now().year
-        mes=timezone.now().month
+     
+        anno=datetime.now().year
+        mes=datetime.now().month
         ingresosdel=request.data['ingresos']
 
         if type(ingresosdel)==str:

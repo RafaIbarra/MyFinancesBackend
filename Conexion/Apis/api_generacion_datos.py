@@ -7,6 +7,7 @@ from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.BalanceSerializers import *
 from Conexion.Serializadores.ResumenSerializers import *
 from django.utils import timezone
+from datetime import datetime
 
 def registros_ingresos(user,anno,mes):
     
@@ -79,9 +80,9 @@ def datos_balance(user,anno,mes):
              'CategoriaGasto':'SNG',
              'monto_gasto':0,
              'user':1,
-             'fecha_gasto':timezone.now(),
+             'fecha_gasto':datetime.now(),
              'anotacion':'',
-             'fecha_registro':timezone.now(),
+             'fecha_registro':datetime.now(),
          }]
 
         df_egresos = pd.DataFrame(empytegresos)
@@ -98,7 +99,7 @@ def datos_balance(user,anno,mes):
     else:
         
         emptyingresos=[{'id': 0, 'producto_financiero': 0, 'NombreIngreso':'SN','TipoIngreso':'SN',
-                        'monto_ingreso': 0, 'user': 1, 'fecha_ingreso':timezone.now() , 'anotacion': '', 'fecha_registro': timezone.now()
+                        'monto_ingreso': 0, 'user': 1, 'fecha_ingreso':datetime.now() , 'anotacion': '', 'fecha_registro': datetime.now()
                         }]
         df_ingresos = pd.DataFrame(emptyingresos)
 
