@@ -209,15 +209,16 @@ def graf_torta_egresos(request,anno,mes):
                    )
             
             handles = [mpatches.Patch(color=mapeo_colores[label]) for label in labels_no] # obtener los colores de los valores que no cumplen con el 5 %
-            ax.legend(handles=handles,
-                        labels=labels_no,
-                        loc="lower center", 
-                        bbox_to_anchor=(0.5, -0.3),
-                        ncol=len(mapeo_colores),
-                        fontsize="small"
-                    )
-            
-            plt.subplots_adjust(bottom=0.2)
+            if len(labels_no) >0:
+                ax.legend(handles=handles,
+                            labels=labels_no,
+                            loc="lower center", 
+                            bbox_to_anchor=(0.5, -0.3),
+                            ncol=len(mapeo_colores),
+                            fontsize="small"
+                        )
+                
+                plt.subplots_adjust(bottom=0.2)
             buffer = BytesIO()
             fig.savefig(buffer, format='png')
             imagen_bytes = buffer.getvalue()
