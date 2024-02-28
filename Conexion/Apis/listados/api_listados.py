@@ -26,9 +26,20 @@ def misingresos(request,anno,mes):
     if resp==True:
         lista_ingresos=datos_ingresos(id_user,anno,mes)
         if lista_ingresos:
-            lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
+            # lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
+             def custom_key(item):
+                fecha_ingreso = item.get('fecha_ingreso', '')
+                fecha_registro = item.get('fecha_registro', '')
+                return (fecha_ingreso, fecha_registro)
+             
+             lista_ingresos = sorted(lista_ingresos, key=custom_key, reverse=False)
+             agrupados=agrupar_periodos_ingresos(lista_ingresos)
             
-        return Response(lista_ingresos,status= status.HTTP_200_OK)      
+        return Response(
+                {'detalles':lista_ingresos,
+                 'agrupados':agrupados
+                 }
+                ,status= status.HTTP_200_OK)      
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)

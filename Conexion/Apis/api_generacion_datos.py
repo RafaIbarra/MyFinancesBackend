@@ -8,6 +8,8 @@ from Conexion.Serializadores.BalanceSerializers import *
 from Conexion.Serializadores.ResumenSerializers import *
 from django.utils import timezone
 from datetime import datetime
+import pandas as pd
+from Conexion.Apis.Graficos.api_generacion_graficos import *
 
 def registros_ingresos(user,anno,mes):
     
@@ -26,6 +28,22 @@ def registros_ingresos(user,anno,mes):
             
     else:
         return []
+    
+def agrupar_periodos_ingresos(data):
+    
+    df_data=pd.DataFrame(data)
+    
+    df_data_agrupado = df_data.groupby(['AnnoIngreso', 'MesIngreso']).agg({'monto_ingreso': ['sum', 'count']})
+    df_data_agrupado.columns = ['SumaMonto', 'ConteoRegistros']
+    df_data_agrupado = df_data_agrupado.reset_index()
+    df_zip=zip(df_data_agrupado['AnnoIngreso'].tolist() , df_data_agrupado['MesIngreso'].tolist(),
+                        df_data_agrupado['SumaMonto'].tolist() , df_data_agrupado['ConteoRegistros'].tolist())
+    
+    df_dict = [{'AnnoIngreso': anno, 'MesIngreso': mes, 'SumaMonto': suma_monto, 'ConteoRegistros': conteo}
+                for anno, mes, suma_monto, conteo in df_zip]
+    
+    
+    return df_dict
 
 def registros_egresos(user,anno,mes):
     condicion1 = Q(user_id__exact=user)
@@ -156,6 +174,17 @@ def datos_resumen(user,anno,mes):
                 }
     r_final = ResumenSerializers(resumen_data)
     if r_final.data:
-        return r_final.data
+        imagen_resumen=generar_graf_barra_resumen(user,anno,mes)
+        imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
+        imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
+        return{
+            'datos':r_final.data,
+            'graficos':{
+                'imgResumen':imagen_resumen,
+                'imgEgresos':imagen_egresos,
+                'imgIngresos':imagen_ingresos,
+            }
+
+        } 
     else:
         return []
