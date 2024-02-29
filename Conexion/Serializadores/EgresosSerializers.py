@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from Conexion.models import Gastos,TiposGastos,CategoriaGastos,Egresos
+from Conexion.models import Gastos,TiposGastos,CategoriaGastos,Egresos,Meses
 from django.db.models import Q
 
 class EgresosSerializers(serializers.ModelSerializer):
@@ -7,6 +7,7 @@ class EgresosSerializers(serializers.ModelSerializer):
     TipoGasto=serializers.SerializerMethodField()
     CategoriaGasto=serializers.SerializerMethodField()
     MesEgreso=serializers.SerializerMethodField()
+    NombreMesEgreso=serializers.SerializerMethodField()
     AnnoEgreso=serializers.SerializerMethodField()
     class Meta:
         model=Egresos
@@ -21,6 +22,7 @@ class EgresosSerializers(serializers.ModelSerializer):
                  ,'anotacion'
                 ,'fecha_registro'
                 ,'MesEgreso'
+                ,'NombreMesEgreso'
                 ,'AnnoEgreso'
                 ]
     fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
@@ -57,6 +59,14 @@ class EgresosSerializers(serializers.ModelSerializer):
         
     def get_MesEgreso(self, obj):
         return obj.fecha_gasto.month
+    
+    def get_NombreMesEgreso(self, obj):
+        numeromes= obj.fecha_gasto.month
+        try:
+            mes_obj = Meses.objects.get(numero_mes=numeromes)
+            return mes_obj.nombre_mes
+        except TiposGastos.DoesNotExist:
+            return None
     
     def get_AnnoEgreso(self, obj):
         return obj.fecha_gasto.year

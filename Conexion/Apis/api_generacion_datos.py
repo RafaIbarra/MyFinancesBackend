@@ -16,8 +16,12 @@ def registros_ingresos(user,anno,mes):
     if anno>0:
         condicion1 = Q(user_id__exact=user)
         condicion2 = Q(fecha_ingreso__year=anno)
-        condicion3 = Q(fecha_ingreso__month=mes)
-        lista=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
+        if mes>0:
+            condicion3 = Q(fecha_ingreso__month=mes)
+            lista=Ingresos.objects.filter(condicion1 & condicion2 & condicion3)
+        else:
+            
+            lista=Ingresos.objects.filter(condicion1 & condicion2 )
     else:
         condicion1 = Q(user_id__exact=user)
         lista=Ingresos.objects.filter(condicion1 )
@@ -33,23 +37,30 @@ def agrupar_periodos_ingresos(data):
     
     df_data=pd.DataFrame(data)
     
-    df_data_agrupado = df_data.groupby(['AnnoIngreso', 'MesIngreso']).agg({'monto_ingreso': ['sum', 'count']})
+    df_data_agrupado = df_data.groupby(['AnnoIngreso', 'MesIngreso','NombreMesIngreso']).agg({'monto_ingreso': ['sum', 'count']})
     df_data_agrupado.columns = ['SumaMonto', 'ConteoRegistros']
     df_data_agrupado = df_data_agrupado.reset_index()
-    df_zip=zip(df_data_agrupado['AnnoIngreso'].tolist() , df_data_agrupado['MesIngreso'].tolist(),
+    df_zip=zip(df_data_agrupado['AnnoIngreso'].tolist() , df_data_agrupado['MesIngreso'].tolist(), df_data_agrupado['NombreMesIngreso'].tolist(),
                         df_data_agrupado['SumaMonto'].tolist() , df_data_agrupado['ConteoRegistros'].tolist())
     
-    df_dict = [{'AnnoIngreso': anno, 'MesIngreso': mes, 'SumaMonto': suma_monto, 'ConteoRegistros': conteo}
-                for anno, mes, suma_monto, conteo in df_zip]
+    df_dict = [{'AnnoIngreso': anno, 'MesIngreso': mes,'NombreMesIngreso':nom_mes, 'SumaMonto': suma_monto, 'ConteoRegistros': conteo}
+                for anno, mes,nom_mes, suma_monto, conteo in df_zip]
     
     
     return df_dict
 
 def registros_egresos(user,anno,mes):
-    condicion1 = Q(user_id__exact=user)
-    condicion2 = Q(fecha_gasto__year=anno)
-    condicion3 = Q(fecha_gasto__month=mes)
-    lista=Egresos.objects.filter(condicion1 & condicion2 & condicion3)
+    if anno >0:
+        condicion1 = Q(user_id__exact=user)
+        condicion2 = Q(fecha_gasto__year=anno)
+        if mes>0:
+            condicion3 = Q(fecha_gasto__month=mes)
+            lista=Egresos.objects.filter(condicion1 & condicion2 & condicion3)
+        else:
+            lista=Egresos.objects.filter(condicion1 & condicion2)
+    else:
+        condicion1 = Q(user_id__exact=user)
+        lista=Egresos.objects.filter(condicion1 )
             
     if lista:
         return lista
