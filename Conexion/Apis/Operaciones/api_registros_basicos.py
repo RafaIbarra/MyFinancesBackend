@@ -7,7 +7,8 @@ from datetime import datetime
 from Conexion.Serializadores.GastosSerializers import *
 from Conexion.Serializadores.ProductosFinancierosSerializers import *
 from Conexion.Serializadores.MesesSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros
+from Conexion.Serializadores.CategoriasGastosSerializers import *
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 import time
@@ -54,9 +55,9 @@ def registrogasto(request):
         existeregistro=False
         condicion1 = Q(user_id__exact=id_user)
         consulta_gastos= list(Gastos.objects.filter(condicion1).values())
-
+        
         for item in consulta_gastos:
-            if item['nombre_gasto'].replace(' ','').lower()==datasave['nombre_gasto'].replace(' ','').lower():
+            if item['nombre_gasto'].replace(' ','').lower()==datasave['nombre_gasto'].replace(' ','').lower() and item['id'] != id_gasto:
                 existeregistro=True
 
         if existeregistro:
@@ -226,6 +227,107 @@ def eliminarproductos(request):
             condicion1 = Q(user_id__exact=id_user)
             lista_prod=ProductosFinancieros.objects.filter(condicion1)
             result_serializer=ProductosFinancierosSerializers(lista_prod,many=True)
+            return Response(result_serializer.data,status= status.HTTP_200_OK)
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+             
+
+        
+
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+
+@api_view(['POST'])
+def registrocategoria(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        data_list = []
+        data_errores=''
+        id_categoria=request.data['codigocategoria']
+        datasave={
+            "id":  request.data['codigocategoria'],
+            "user": id_user,
+            "nombre_categoria": request.data['nombre'],
+            "fecha_registro": datetime.now()
+            
+        }
+        data_list.append(datasave)
+        
+
+        if len(datasave['nombre_categoria']) < 1:
+            mensaje='Ingrese el nombre para el concepto de la categoria'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+        existeregistro=False
+        condicion1 = Q(user_id__exact=id_user)
+        consulta_gastos= list(CategoriaGastos.objects.filter(condicion1).values())
+        
+        for item in consulta_gastos:
+            if item['nombre_categoria'].replace(' ','').lower()==datasave['nombre_categoria'].replace(' ','').lower() and item['id'] != id_categoria:
+                existeregistro=True
+
+        if existeregistro:
+            mensaje='Ya se registro una categoria de gasto con este nombre'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+        if len(data_errores)==0:
+            if id_categoria>0:
+                condicion1 = Q(id__exact=id_categoria)
+                dato_existente=CategoriaGastos.objects.filter(condicion1 )
+                if dato_existente:
+                    
+                    existente=CategoriaGastos.objects.get(condicion1)
+                    
+                    categoria_serializer=CategoriaGastosSerializers(existente,data=datasave)
+
+                else:
+                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+            
+            else:
+                categoria_serializer=CategoriaGastosSerializers(data=datasave)
+
+            if categoria_serializer.is_valid():
+                categoria_serializer.save()
+                condicion1 = Q(user_id__exact=id_user)
+                lista = CategoriaGastos.objects.filter(condicion1).order_by( 'nombre_categoria')
+                result_serializer=CategoriaGastosSerializers(lista,many=True)
+                return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+            return Response({'message':categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        else:
+            
+            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
+def eliminarcategorias(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        gatosdel=request.data['categorias']
+        if type(gatosdel)==str:
+            gatosdel=ast.literal_eval(gatosdel)
+
+        if len(gatosdel):
+            for item in gatosdel:
+                condicion1 = Q(id__exact=item)
+                lista=CategoriaGastos.objects.filter(condicion1).values()
+
+                if lista:
+                                    
+                    gasto = CategoriaGastos.objects.get(pk=item)
+                    gasto.delete()
+
+            condicion1 = Q(user_id__exact=id_user)
+            lista_gastos=CategoriaGastos.objects.filter(condicion1)
+            result_serializer=CategoriaGastosSerializers(lista_gastos,many=True)
             return Response(result_serializer.data,status= status.HTTP_200_OK)
         else:
             return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)

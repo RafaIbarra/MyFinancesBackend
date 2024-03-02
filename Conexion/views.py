@@ -103,7 +103,6 @@ class Login(TokenObtainPairView):
     
 class Registro(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    
 
     def post(self, request, *args, **kwargs):
         nombre = request.data.get('nombre', '')

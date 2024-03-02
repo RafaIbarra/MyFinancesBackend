@@ -26,10 +26,14 @@ def estadisticas_egresos(request,anno,mes):
         data_periodo=estadistica_egresos_periodo(id_user,anno,mes)
         data_concepto=estadistica_egresos_conceptos(id_user,anno,mes)
         data_categoria=estadistica_egresos_categoria(id_user,anno,mes)
+        data_comportamiento_gasto=estadistica_egresos_quince_dias(id_user,anno,mes)
+        data_detalle_por_categoria=estadistica_egresos_por_categoria(id_user,anno,mes)
         return Response({
             'DatosPeriodoGasto':data_periodo,
             'DatosConceptoGasto':data_concepto,
-            'DatosCategoriaGasto':data_categoria
+            'DatosCategoriaGasto':data_categoria,
+            'DataComportamientoGasto':data_comportamiento_gasto,
+            'DataDetallePorCategotria':data_detalle_por_categoria
         }
             
                         ,status= status.HTTP_200_OK) 

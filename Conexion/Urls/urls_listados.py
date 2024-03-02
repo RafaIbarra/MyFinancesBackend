@@ -1,12 +1,15 @@
 from django.urls import path
 
-from Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos,misproductosfinancieros,misingresos
+from Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos,misproductosfinancieros,misingresos,misdatosregistroegreso,miscategorias
 from Conexion.Apis.Estadisticas.api_estadisticas import *
 urlpatterns = [
 
     path('Meses/',meses,name='meses'),
     path('MisGastos/',misgastos,name='misgastos'),
     path('MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
+
+    path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
+    path('MisCategorias/',miscategorias,name='miscategorias'),
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
 

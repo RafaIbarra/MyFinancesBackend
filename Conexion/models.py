@@ -2,7 +2,8 @@ from django.db import models
 
 # Create your models here.
 class Usuarios(models.Model):
-    id= models.AutoField(primary_key=True, serialize=False)
+    
+    id= models.IntegerField(primary_key=True, serialize=False)
     nombre_usuario=models.CharField(max_length=200,blank=False)
     apellido_usuario=models.CharField(max_length=200,blank=False)
     fecha_nacimiento=models.DateField("Fecha Nacimiento")
@@ -33,6 +34,7 @@ class TiposGastos(models.Model):
     
 class CategoriaGastos(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
+    user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
     nombre_categoria=models.CharField(max_length=200,blank=False,unique=True)
     fecha_registro=models.DateTimeField("fecha registro")
 

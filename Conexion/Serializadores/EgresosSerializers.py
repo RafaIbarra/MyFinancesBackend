@@ -6,6 +6,7 @@ class EgresosSerializers(serializers.ModelSerializer):
     NombreGasto=serializers.SerializerMethodField()
     TipoGasto=serializers.SerializerMethodField()
     CategoriaGasto=serializers.SerializerMethodField()
+    CodigoCategoriaGasto=serializers.SerializerMethodField()
     MesEgreso=serializers.SerializerMethodField()
     NombreMesEgreso=serializers.SerializerMethodField()
     AnnoEgreso=serializers.SerializerMethodField()
@@ -16,6 +17,7 @@ class EgresosSerializers(serializers.ModelSerializer):
                  ,'NombreGasto'
                  ,'TipoGasto'
                  ,'CategoriaGasto'
+                 ,'CodigoCategoriaGasto'
                  ,'monto_gasto'
                  ,'user'
                  ,'fecha_gasto'
@@ -54,6 +56,17 @@ class EgresosSerializers(serializers.ModelSerializer):
             id_categoria_gasto=gastos_obj.categoria_id
             tipo_operacion_obj = CategoriaGastos.objects.get(id=id_categoria_gasto)
             return tipo_operacion_obj.nombre_categoria
+        except CategoriaGastos.DoesNotExist:
+            return None
+        
+    def get_CodigoCategoriaGasto(self, obj):
+        cod_gasto = obj.retorno_gasto_id()
+        
+        try:
+            gastos_obj = Gastos.objects.get(id=cod_gasto)
+            id_categoria_gasto=gastos_obj.categoria_id
+            tipo_operacion_obj = CategoriaGastos.objects.get(id=id_categoria_gasto)
+            return tipo_operacion_obj.id
         except CategoriaGastos.DoesNotExist:
             return None
         
