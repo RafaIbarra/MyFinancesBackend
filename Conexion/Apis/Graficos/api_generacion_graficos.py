@@ -11,6 +11,7 @@ from matplotlib import  patches as mpatches
 from matplotlib import colors as mcolors
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 import base64
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
@@ -53,28 +54,40 @@ def generar_graf_barra_resumen(id_user,anno,mes):
 
         df_ingresos_total = pd.DataFrame( 
 
-            {   'Concepto': ['TotalSalario'],
+            {   'Concepto': ['Total Ingreso'],
                 'TotalIngreso':[df_ingresos['monto_ingreso'].sum()]
             }
             )
         
-        
-        
+        df_total_egresos=pd.DataFrame(
+            {   'Concepto': ['Total Egresos'],
+                'TotalEgreso':[df_egresos['monto_gasto'].sum()]
+            }
+        )
+
+        df_total_egresos['porcentaje']= df_total_egresos['TotalEgreso'] /totalingresos * 100
+
+        print(df_total_egresos)
+
         ingresos = df_ingresos_total['TotalIngreso'].tolist()
         conceptos = df_ingresos_total['Concepto'].tolist()
         
-        gastos = df_egresos_agrupado['monto_gasto'].tolist()
-        porcentajes = df_egresos_agrupado['porcentaje'].tolist()
-        nombres_gastos = df_egresos_agrupado['NombreGasto'].tolist()
+        # gastos = df_egresos_agrupado['monto_gasto'].tolist()
+        # porcentajes = df_egresos_agrupado['porcentaje'].tolist()
+        # nombres_gastos = df_egresos_agrupado['NombreGasto'].tolist()
+
+        gastos = df_total_egresos['TotalEgreso'].tolist()
+        porcentajes = df_total_egresos['porcentaje'].tolist()
+        nombres_gastos = df_total_egresos['Concepto'].tolist()
         
         # Gráfico
-        fig, ax = plt.subplots(figsize=(6, 7))
+        fig, ax = plt.subplots(figsize=(5, 7))
         plt.gcf().subplots_adjust(bottom=0.5)
         # Ancho de barras 
-        bar_width = 0.2
+        bar_width = 0.3
 
         # Espaciado entre barras
-        bar_spacing = 0.1 
+        bar_spacing = 0.00 
         x = 0 
         # Posicion  es de barras con espaciado
         bar_positions = [x + i * (bar_width + bar_spacing) for i in range(len(gastos) + 1)]
@@ -93,7 +106,7 @@ def generar_graf_barra_resumen(id_user,anno,mes):
             gastos_bar = ax.bar(gastos_bar_positions[i], gasto, bar_width,label=label)
 
         # ax.legend()
-        ax.legend(loc='upper right', bbox_to_anchor=(1, 1), fontsize=8)
+        # ax.legend(loc='upper right', bbox_to_anchor=(1, 1), fontsize=8)
             
 
 
@@ -109,20 +122,20 @@ def generar_graf_barra_resumen(id_user,anno,mes):
             )
 
         # Etiqueta solo para ingreso
-        bar_positions_una=[]
-        bar_positions_una.append(bar_positions[0])
-        ax.set_xticks(bar_positions_una)
-        ax.set_xticklabels(conceptos )
+        # bar_positions_una=[]
+        # bar_positions_una.append(bar_positions[0])
+        # ax.set_xticks(bar_positions_una)
+        # ax.set_xticklabels(conceptos )
 
-        # # Todas las etiquetas
-        # ax.set_xticks(bar_positions)
-        # ax.set_xticklabels(conceptos + nombres_gastos)
+        # Todas las etiquetas
+        ax.set_xticks(bar_positions)
+        ax.set_xticklabels(conceptos + nombres_gastos)
 
         for label in ax.get_xmajorticklabels():
-            label.set_rotation(15) 
+            label.set_rotation(0) 
             label.set_ha("right")
             label.set_rotation_mode("anchor")
-            label.set_fontsize(7)
+            label.set_fontsize(10)
 
 
         # Otros detalles gráfico 
@@ -167,27 +180,32 @@ def generar_graf_torta_egresos(id_user,anno,mes):
         
         #Para que solo muestre en el grafico aquellos que hayan superado el 5%
         labels = []
+        valores_si=[]
         labels_no=[]
         for label, valor in zip(df_egresos_agrupado['NombreGasto'].tolist() , df_egresos_agrupado['porcentaje'].tolist()):
             if valor > 5:
                 labels.append(label)
+                valores_si.append(valor)
                 
             else:
-                labels.append('')
+                
                 labels_no.append(label)
 
         
         
         valores = df_egresos_agrupado['monto_gasto'].tolist()
 
-        cmap = mcolors.ListedColormap(mcolors.TABLEAU_COLORS) # crear un mapa de colores
-        num_categorias = len(df_egresos_agrupado) # determinar el tamaño del arreglo
-        colores = list(cmap.colors)[:num_categorias] # obtener los colores
-        mapeo_colores = dict(zip(df_egresos_agrupado['NombreGasto'].tolist(), colores)) # asignar a todos los conceptos un color
+        cmap = cm.get_cmap('viridis')
+        num_categorias = len(df_egresos_agrupado) # determinar el tamaño del arreglo    
+        colores = [cmap(i / num_categorias) for i in range(num_categorias)]
+        mapeo_colores = dict(zip(df_egresos_agrupado['NombreGasto'].tolist(), colores))
+        
+
 
         colores_torta = [mapeo_colores[label] for label in df_egresos_agrupado['NombreGasto'].tolist()] # Obtener los colores despues de la asignacion
+       
 
-        ax.pie(valores,
+        ax.pie(valores_si,
                 labels=labels ,
                 colors=colores_torta,
                 autopct=lambda p: '{:.1f}%'.format(p) if p > 5 else '',

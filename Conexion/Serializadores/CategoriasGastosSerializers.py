@@ -5,3 +5,5 @@ class CategoriaGastosSerializers(serializers.ModelSerializer):
     class Meta:
         model=CategoriaGastos
         fields= '__all__'
+
+    fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
