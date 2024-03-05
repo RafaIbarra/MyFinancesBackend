@@ -59,6 +59,7 @@ def misegresos(request,anno,mes):
         if lista_egresos:
 
             lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
+            agrupados=agrupar_periodos_egresos(lista_egresos)
             lista_meses = Meses.objects.order_by('numero_mes')
             result_meses_serializer=MesesSerializers(lista_meses,many=True)
             if result_meses_serializer.data:
@@ -66,7 +67,8 @@ def misegresos(request,anno,mes):
             
                 return Response(
                      {
-                          'datosIngresos':lista_egresos,
+                          'detalles':lista_egresos,
+                          'agrupados':agrupados,
                           'datosmeses':result_meses_serializer.data
                      },
                      

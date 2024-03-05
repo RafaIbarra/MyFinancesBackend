@@ -4,7 +4,7 @@ import numpy as np
 
 from  Conexion.models import Egresos, Ingresos,CategoriaGastos
 from Conexion.Apis.api_generacion_datos import datos_egresos
-
+from Conexion.Apis.Estadisticas.EstadisticasEgresos.generacion_graficos import *
 def estadistica_egresos_periodo(id_user,anno,mes):
     data_egresos = datos_egresos(id_user,anno,mes)
     if data_egresos:
@@ -13,16 +13,26 @@ def estadistica_egresos_periodo(id_user,anno,mes):
         df_data_egresos=df_data_egresos.reset_index()
         ###### por periodos ########
         df_data_agrupado = df_data_egresos.groupby(['AnnoEgreso', 'MesEgreso','NombreMesEgreso','Periodo']).agg({'monto_gasto': ['sum', 'count']})
+        
         df_data_agrupado.columns = ['SumaMonto', 'CantidadRegistros']
-        df_data_agrupado = df_data_agrupado.reset_index()
+        df_data_agrupado = df_data_agrupado.sort_values(by=['AnnoEgreso', 'MesEgreso'], ascending=[True, True])
+        df_data_agrupado = df_data_agrupado.reset_index() # para el grafico
+        cantidad_periodos=len(df_data_agrupado)
         fila_periodo_maximo = df_data_agrupado.loc[df_data_agrupado['SumaMonto'].idxmax()]
-        resultado_concepto_maximo = [{'Periodo': fila_periodo_maximo['Periodo']}, {'SumaMonto': fila_periodo_maximo['SumaMonto']}, {'CantidadRegistros': fila_periodo_maximo['CantidadRegistros']}]
+        
         promedio_periodo = df_data_agrupado['SumaMonto'].mean()
+        
+        grafico_periodo=estadistica_grafico_linas(df_data_agrupado,'Titulo',promedio_periodo)
+        
+        resultado_concepto_maximo = [{'Periodo': fila_periodo_maximo['Periodo'],
+                                      'SumaMonto': fila_periodo_maximo['SumaMonto'],
+                                      'CantidadRegistros': fila_periodo_maximo['CantidadRegistros'],
+                                      'PromedioGasto':promedio_periodo,
+                                      'CantidadPeriodos':cantidad_periodos,
+                                      'grafico':grafico_periodo
 
-        result=[
-            {'DatosMaximoGasto':resultado_concepto_maximo},
-            {'PromedioGasto':promedio_periodo},
-        ]
+                                      }]
+        result=[{'DatosMaximoGasto':resultado_concepto_maximo}]
         # print(df_data_agrupado)
         # print(resultado_concepto_maximo)
         # print(promedio_periodo)
@@ -102,6 +112,7 @@ def estadistica_egresos_categoria(id_user,anno,mes):
 
     else:
         return []
+
 def estadistica_egresos_quince_dias(id_user,anno,mes):
     data_egresos = datos_egresos(id_user,anno,mes)
     if data_egresos:
@@ -110,35 +121,57 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
         df_data_egresos['Periodo']=df_data_egresos['NombreMesEgreso'] + '-' + df_data_egresos['AnnoEgreso'].astype(str)
         df_data_egresos=df_data_egresos.reset_index()
         df_data_egresos['fecha_gasto']=pd.to_datetime(df_data_egresos['fecha_gasto'])
-        # print(df_data_egresos)
+        
         df_data_filtro=df_data_egresos[df_data_egresos['fecha_gasto'].dt.day<16]
         
-        # print(df_data_filtro)
-        df_data_filtro_agrupado = df_data_filtro.groupby(['Periodo', 'CategoriaGasto'])['monto_gasto'].sum().reset_index()
-        # df_data_filtro_agrupado.columns = ['SumaMonto']
-        # df_data_filtro_agrupado = df_data_filtro_agrupado.reset_index()
-        # print(df_data_filtro_agrupado)
-        # categoria_maxima = df_data_filtro_agrupado.loc[df_data_filtro_agrupado['SumaMonto'].idxmax()]
-        categoria_maxima_indices = df_data_filtro_agrupado.groupby('Periodo')['monto_gasto'].idxmax()
+        
+        df_data_filtro_agrupado = df_data_filtro.groupby(['Periodo', 'CategoriaGasto','MesEgreso','AnnoEgreso'])['monto_gasto'].sum().reset_index()
+        
+        categoria_maxima_indices = df_data_filtro_agrupado.groupby(['Periodo','MesEgreso','AnnoEgreso'])['monto_gasto'].idxmax()
         categoria_maxima_perdiodo = df_data_filtro_agrupado.loc[categoria_maxima_indices]
+        categoria_maxima_perdiodo = categoria_maxima_perdiodo.sort_values(by=['AnnoEgreso', 'MesEgreso'], ascending=[True, True]) # detalle por periodo de categorias con mas gastos
+        
         cantidad_registros=categoria_maxima_perdiodo.shape[0]
         categoria_maxima_perdiodo_cantidades=categoria_maxima_perdiodo.groupby(['CategoriaGasto']).count().reset_index()
         categoria_maxima_perdiodo_cantidades.rename(columns={'monto_gasto': 'CantidadVeces'}, inplace=True)
         categoria_maxima_perdiodo_cantidades = categoria_maxima_perdiodo_cantidades.drop('Periodo', axis=1)
         categoria_maxima_perdiodo_cantidades['CantidadRegistros']=cantidad_registros
-        categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100
+        categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100 # datos para el grafico
+
+        
+        mayor_categoria=categoria_maxima_perdiodo_cantidades['CantidadVeces'].idxmax()
+        datos_mayor_categoria=categoria_maxima_perdiodo_cantidades.loc[mayor_categoria]
+        
+        result_mayor_categoria=[
+            {
+                'Categoria':datos_mayor_categoria['CategoriaGasto'],
+                'CantidadVeces':datos_mayor_categoria['CantidadVeces'],
+                'Porcentaje':datos_mayor_categoria['Porcentaje'],
+                'CantidadRegistros':datos_mayor_categoria['CantidadRegistros'],
+            }
+        ] #Datos de la categoria que mas veces se gasto.
+        
+        result_detalle_periodo=[]
+        for Periodo,CategoriaGasto, MesEgreso ,AnnoEgreso,monto_gasto in zip(categoria_maxima_perdiodo['Periodo'].tolist(),
+                                                                            categoria_maxima_perdiodo['CategoriaGasto'].tolist(),
+                                                                            categoria_maxima_perdiodo['MesEgreso'].tolist(),
+                                                                            categoria_maxima_perdiodo['AnnoEgreso'].tolist(),
+                                                                            categoria_maxima_perdiodo['monto_gasto'].tolist()
+                                                                            ):
+            result_detalle_periodo.append([
+                {'Periodo':Periodo,'CategoriaGasto':CategoriaGasto,'MesEgreso':MesEgreso,'AnnoEgreso':AnnoEgreso,'monto_gasto':monto_gasto}
+            ])
+
         valores=[]
-        result=zip(categoria_maxima_perdiodo_cantidades['CategoriaGasto'].tolist(),
-                   categoria_maxima_perdiodo_cantidades['CantidadVeces'].tolist(),
-                   categoria_maxima_perdiodo_cantidades['CantidadRegistros'].tolist(),
-                   categoria_maxima_perdiodo_cantidades['Porcentaje'].tolist()
-                   )
+        grafico_15dias=estadistica_grafico_15_dias(categoria_maxima_perdiodo_cantidades)
+        valores.append({'DatosMayoCategoria':result_mayor_categoria})
+        valores.append({'DetallePeriodo':result_detalle_periodo})
+        valores.append({'grafico':grafico_15dias})
+        
         # print(categoria_maxima_perdiodo_cantidades) ## data para el grafico
-        for categoria,cantidad,cantidadregistros,porcentaje in result:
-            valores.append([{'CategoriaGasto':categoria},{'CantidadVeces':cantidad},
-                            {'CantidadRegistros':cantidadregistros},
-                            {'Porcentaje':porcentaje}
-                            ])
+        # for categoria,cantidad,cantidadregistros,porcentaje in result:
+        #     valores.append([{'CategoriaGasto':categoria,'CantidadVeces':cantidad,'CantidadRegistros':cantidadregistros,'Porcentaje':porcentaje}])
+
         return valores
 
     else:

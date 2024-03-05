@@ -49,6 +49,23 @@ def agrupar_periodos_ingresos(data):
     
     return df_dict
 
+def agrupar_periodos_egresos(data):
+    
+    df_data=pd.DataFrame(data)
+    
+    df_data_agrupado = df_data.groupby(['AnnoEgreso', 'MesEgreso','NombreMesEgreso']).agg({'monto_gasto': ['sum', 'count']})
+    df_data_agrupado.columns = ['SumaMonto', 'ConteoRegistros']
+    df_data_agrupado = df_data_agrupado.reset_index()
+    df_zip=zip(df_data_agrupado['AnnoEgreso'].tolist() , df_data_agrupado['MesEgreso'].tolist(), df_data_agrupado['NombreMesEgreso'].tolist(),
+                        df_data_agrupado['SumaMonto'].tolist() , df_data_agrupado['ConteoRegistros'].tolist())
+    
+    df_dict = [{'AnnoEgreso': anno, 'MesEgreso': mes,'NombreMesEgreso':nom_mes, 'SumaMonto': suma_monto, 'ConteoRegistros': conteo}
+                for anno, mes,nom_mes, suma_monto, conteo in df_zip]
+    
+    
+    return df_dict
+
+
 def registros_egresos(user,anno,mes):
     if anno >0:
         condicion1 = Q(user_id__exact=user)

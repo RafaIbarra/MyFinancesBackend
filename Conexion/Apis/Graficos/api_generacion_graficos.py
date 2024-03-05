@@ -67,7 +67,7 @@ def generar_graf_barra_resumen(id_user,anno,mes):
 
         df_total_egresos['porcentaje']= df_total_egresos['TotalEgreso'] /totalingresos * 100
 
-        print(df_total_egresos)
+        
 
         ingresos = df_ingresos_total['TotalIngreso'].tolist()
         conceptos = df_ingresos_total['Concepto'].tolist()
