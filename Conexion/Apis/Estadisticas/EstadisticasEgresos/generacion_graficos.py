@@ -9,20 +9,38 @@ from matplotlib import colors as mcolors
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-
 import base64
+from matplotlib.ticker import FuncFormatter
+
+def format_with_commas(value, pos):
+    return '{:,}'.format(int(value))
+
 def estadistica_grafico_linas(data,titulo,promedio_periodo):
     
-    periodos=data['Periodo'].to_list()
+    periodos=data['NombreMesEgreso'].to_list()
     montos=data['SumaMonto'].to_list()
-    fig, ax = plt.subplots(figsize=(5, 4))
+    tamañoperiodos=len(periodos)
+    fig, ax = plt.subplots(figsize=(tamañoperiodos, 4.5))
+
     ax.plot(periodos, montos, color = 'tab:purple', marker = 'o')
-    ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
-    ax.set_xlabel("Periodos", fontdict = {'fontsize':12, 'fontweight':'bold', 'color':'tab:blue'})
-    ax.set_ylabel("Montos Gastos")
-    ax.set_title(titulo, loc = "left", fontdict = {'fontsize':14, 'fontweight':'bold', 'color':'tab:blue'})
+
+    
     ax.axhline(y=promedio_periodo, color='r', linestyle='-',label='Promedio')
     ax.legend()
+
+    
+    
+    ax.get_yaxis().set_major_formatter(FuncFormatter(format_with_commas))
+    # ax.get_yaxis().get_major_formatter().set_scientific(False)
+    ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
+    ax.set_xlabel("Periodos", fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
+    ax.set_ylabel("Montos Gastos")
+    
+    
+    ax.set_title(titulo, loc = "left", fontdict = {'fontsize':14, 'fontweight':'bold', 'color':'tab:blue'})
+    
+    ax.legend()
+    
     buffer = BytesIO()
     fig.savefig(buffer, format='png')
     buffer.seek(0)
