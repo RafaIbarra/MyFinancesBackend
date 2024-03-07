@@ -70,3 +70,23 @@ def estadistica_grafico_15_dias(data):
     imagen_15dias_b64 = base64.b64encode(imagen_15dias_bytes).decode('utf-8')
     plt.close('all')
     return imagen_15dias_b64
+
+def estadistica_grafico_10_conceptos(data):
+    print(data)
+    colores = plt.cm.tab10.colors
+    horizontal=data['SumaMonto'].tolist()
+    vertical=data['NombreGasto'].tolist()
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.barh(vertical,horizontal, color=colores )
+    ax.grid(axis = 'x', color = 'gray', linestyle = 'dashed')
+    ax.get_xaxis().set_major_formatter(FuncFormatter(format_with_commas))
+    plt.yticks(fontsize=8)
+    plt.xticks(fontsize=8)
+    plt.subplots_adjust(bottom=0.2)
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png')
+    imagen_10conceptos_bytes = buffer.getvalue()
+    
+    imagen_10conceptos_b64 = base64.b64encode(imagen_10conceptos_bytes).decode('utf-8')
+    plt.close('all')
+    return imagen_10conceptos_b64

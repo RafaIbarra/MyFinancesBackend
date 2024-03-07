@@ -51,23 +51,35 @@ def estadistica_egresos_conceptos(id_user,anno,mes):
 
         df_data_agrupado_conceptos = df_data_egresos.groupby(['NombreGasto']).agg({'monto_gasto': ['sum', 'count']})
         df_data_agrupado_conceptos.columns = ['SumaMonto', 'CantidadRegistros']
-        df_data_agrupado_conceptos = df_data_agrupado_conceptos.reset_index()
+        df_data_agrupado_conceptos = df_data_agrupado_conceptos.sort_values(by=['SumaMonto'], ascending=[False]).reset_index()
+        
+        df_10_maximos = df_data_agrupado_conceptos.head(10)
+        imagen=estadistica_grafico_10_conceptos(df_10_maximos)
+        concepto_maximo = df_data_agrupado_conceptos.loc[df_data_agrupado_conceptos['SumaMonto'].idxmax()]
+
         
 
-        concepto_maximo = df_data_agrupado_conceptos.loc[df_data_agrupado_conceptos['SumaMonto'].idxmax()]
-        resultado_concepto_maximo = [{'Concepto': concepto_maximo['NombreGasto']}, {'Monto': concepto_maximo['SumaMonto']}, {'cantidad': concepto_maximo['CantidadRegistros']}]
-
-        nombre_concepto_maximo=resultado_concepto_maximo[0]['Concepto']
+        nombre_concepto_maximo= concepto_maximo['NombreGasto']
         detalle_concepto_maximo=df_data_egresos.loc[df_data_egresos['NombreGasto'] == nombre_concepto_maximo]
         periodo_concepto_maximo=detalle_concepto_maximo.loc[detalle_concepto_maximo['monto_gasto'].idxmax()]
-        resultado_detalle_concepto_maximo = [{'Monto': periodo_concepto_maximo['monto_gasto']}, {'Periodo': periodo_concepto_maximo['Periodo']}, 
-                                                {'fecha_gasto': periodo_concepto_maximo['fecha_gasto']}, {'fecha_registro': periodo_concepto_maximo['fecha_registro']}]
+        resultado_detalle_concepto_maximo = [{'Monto': periodo_concepto_maximo['monto_gasto'],
+                                              'Periodo': periodo_concepto_maximo['Periodo'],
+                                              'fecha_gasto': periodo_concepto_maximo['fecha_gasto'],
+                                              'fecha_registro': periodo_concepto_maximo['fecha_registro']
+                                              }]
         
         promedio_concepto_periodo = detalle_concepto_maximo['monto_gasto'].mean()
+        resultado_concepto_maximo = [{'Concepto': concepto_maximo['NombreGasto'],
+                                      'Monto': concepto_maximo['SumaMonto'],
+                                      'cantidad': concepto_maximo['CantidadRegistros'],
+                                      'Pomedio':promedio_concepto_periodo
+                                      }]
+        
         result=[
             {'DatosConceptoGastoMaximo':resultado_concepto_maximo},
             {'DetalleConceptoGastoMaximo':resultado_detalle_concepto_maximo},
-            {'PromedioGastoConcepto':promedio_concepto_periodo},
+            
+            {'grafico':imagen},
 
         ]
 
