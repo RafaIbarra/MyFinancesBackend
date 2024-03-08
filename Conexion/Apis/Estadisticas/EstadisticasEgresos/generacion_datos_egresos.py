@@ -2,7 +2,7 @@ from django.db.models import Q
 import pandas as pd
 import numpy as np
 
-from  Conexion.models import Egresos, Ingresos,CategoriaGastos
+from  Conexion.models import CategoriaGastos
 from Conexion.Apis.api_generacion_datos import datos_egresos
 from Conexion.Apis.Estadisticas.EstadisticasEgresos.generacion_graficos import *
 def estadistica_egresos_periodo(id_user,anno,mes):
@@ -100,23 +100,36 @@ def estadistica_egresos_categoria(id_user,anno,mes):
         df_data_agrupado_categoria = df_data_egresos.groupby(['CategoriaGasto']).agg({'monto_gasto': ['sum', 'count']})
         df_data_agrupado_categoria.columns = ['SumaMonto', 'CantidadRegistros']
         df_data_agrupado_categoria = df_data_agrupado_categoria.reset_index()
-        # print(df_data_agrupado_categoria)
+        imagen=estadistica_grafico_por_categoria(df_data_agrupado_categoria)
 
         categoria_maxima = df_data_agrupado_categoria.loc[df_data_agrupado_categoria['SumaMonto'].idxmax()]
-        resultado_categoria_maxima = [{'Categoria': categoria_maxima['CategoriaGasto']}, {'Monto': categoria_maxima['SumaMonto']}, {'cantidad': categoria_maxima['CantidadRegistros']}]
-
-        nombre_categoria_maximo=resultado_categoria_maxima[0]['Categoria']
-        
+        nombre_categoria_maximo=categoria_maxima['CategoriaGasto']
         detalle_categoria_maxima=df_data_egresos.loc[df_data_egresos['CategoriaGasto'] == nombre_categoria_maximo]
-        periodo_categoria_maximo=detalle_categoria_maxima.loc[detalle_categoria_maxima['monto_gasto'].idxmax()]
-        resultado_detalle_categoria_maxima = [{'Monto': periodo_categoria_maximo['monto_gasto']}, {'Periodo': periodo_categoria_maximo['Periodo']}, 
-                                                {'fecha_gasto': periodo_categoria_maximo['fecha_gasto']}, {'fecha_registro': periodo_categoria_maximo['fecha_registro']}]
-        
         promedio_categoria_periodo = detalle_categoria_maxima['monto_gasto'].mean()
+        
+
+        resultado_categoria_maxima = [{'Categoria': categoria_maxima['CategoriaGasto'],
+                                       'Monto': categoria_maxima['SumaMonto'],
+                                       'cantidad': categoria_maxima['CantidadRegistros'],
+                                       'promedio':promedio_categoria_periodo
+                                       }, 
+                                      
+                                      ]
+        
+        periodo_categoria_maximo=detalle_categoria_maxima.loc[detalle_categoria_maxima['monto_gasto'].idxmax()]
+        resultado_detalle_categoria_maxima = [{'Monto': periodo_categoria_maximo['monto_gasto'],
+                                               'Periodo': periodo_categoria_maximo['Periodo'],
+                                               'fecha_gasto': periodo_categoria_maximo['fecha_gasto'],
+                                                'fecha_registro': periodo_categoria_maximo['fecha_registro']
+                                                
+                                               }
+                                              ]
+        
+        
         result=[
             {'DatosCategoriaGastoMaximo':resultado_categoria_maxima},
             {'DetalleCategoriaGastoMaximo':resultado_detalle_categoria_maxima},
-            {'PromedioGastoCategoria':promedio_categoria_periodo},
+            {'grafico':imagen}
 
         ]
 

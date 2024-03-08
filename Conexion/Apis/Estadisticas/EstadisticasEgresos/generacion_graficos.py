@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import  patches as mpatches
 from matplotlib import colors as mcolors
+from matplotlib.colors import to_rgba
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -72,7 +73,7 @@ def estadistica_grafico_15_dias(data):
     return imagen_15dias_b64
 
 def estadistica_grafico_10_conceptos(data):
-    print(data)
+    
     colores = plt.cm.tab10.colors
     horizontal=data['SumaMonto'].tolist()
     vertical=data['NombreGasto'].tolist()
@@ -90,3 +91,32 @@ def estadistica_grafico_10_conceptos(data):
     imagen_10conceptos_b64 = base64.b64encode(imagen_10conceptos_bytes).decode('utf-8')
     plt.close('all')
     return imagen_10conceptos_b64
+
+def estadistica_grafico_por_categoria(data):
+    
+    horizontal=data['CategoriaGasto'].tolist()
+    vertical=data['SumaMonto'].tolist()
+    num_barras = len(horizontal)
+    print('numero de barras')
+    print(num_barras)
+    # colores_rgba = [colors.to_rgba(np.random.rand(), alpha=0.7) for _ in range(num_barras)]
+    # colores_rgba = [colors.to_rgba(np.random.rand(), alpha=0.7) for _ in range(num_barras)]
+    # colores_rgba = [to_rgba(np.random.rand(), np.random.rand(), np.random.rand()) for _ in range(len(horizontal))]
+    # colores_rgba = [to_rgba(np.random.rand()) for _ in range(len(horizontal))]
+    # colores_rgba = [to_rgba(np.random.rand(), alpha=1.0) for _ in range(len(horizontal))]
+    colores_hex = ['#%06x' % np.random.randint(0, 0xFFFFFF) for _ in range(len(horizontal))]
+    fig, ax = plt.subplots(figsize=(10, 6.5))
+    ax.bar(horizontal,vertical,color=colores_hex)
+    ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
+    ax.get_yaxis().set_major_formatter(FuncFormatter(format_with_commas))
+    plt.yticks(fontsize=8)
+    plt.xticks(fontsize=8)
+    ax.set_xticklabels(horizontal, rotation=30, ha='right')
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png')
+    imagen_porcategoria_bytes = buffer.getvalue()
+    
+    imagen_porcategoria_b64 = base64.b64encode(imagen_porcategoria_bytes).decode('utf-8')
+    plt.close('all')
+    return imagen_porcategoria_b64
+   

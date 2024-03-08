@@ -12,7 +12,7 @@ urlpatterns = [
     path('MisCategorias/',miscategorias,name='miscategorias'),
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
-
+    path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),
 
     path('MisProductosFinancieros/',misproductosfinancieros,name='misproductosfinancieros'),
     path('MisIngresos/<int:anno>/<int:mes>/',misingresos,name='misingresos'),

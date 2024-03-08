@@ -9,6 +9,7 @@ from Conexion.Apis.api_generacion_datos import *
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.Estadisticas.EstadisticasEgresos.generacion_datos_egresos import *
+from Conexion.Apis.Estadisticas.EstadisticasIngresos.generacion_datos_ingresos import *
 
 from rest_framework.response import Response
 from rest_framework import status  
@@ -34,6 +35,21 @@ def estadisticas_egresos(request,anno,mes):
             'DatosCategoriaGasto':data_categoria,
             'DataComportamientoGasto':data_comportamiento_gasto,
             'DataDetallePorCategotria':data_detalle_por_categoria
+        }
+            
+                        ,status= status.HTTP_200_OK) 
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def estadisticas_ingresos(request,anno,mes):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        data_periodo_saldo=estadisticas_saldos_periodos(id_user,anno,mes)
+        return Response({
+            'DatosPeriodoSaldo':data_periodo_saldo,
+            
         }
             
                         ,status= status.HTTP_200_OK) 

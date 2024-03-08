@@ -12,6 +12,7 @@ from matplotlib import colors as mcolors
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import seaborn as sns
 
 import base64
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
@@ -194,10 +195,14 @@ def generar_graf_torta_egresos(id_user,anno,mes):
         
         
         valores = df_egresos_agrupado['monto_gasto'].tolist()
-
-        cmap = cm.get_cmap('viridis')
         num_categorias = len(df_egresos_agrupado) # determinar el tamaño del arreglo    
-        colores = [cmap(i / num_categorias) for i in range(num_categorias)]
+
+        # cmap = cm.get_cmap('viridis')
+        # colores = [cmap(i / num_categorias) for i in range(num_categorias)]
+
+        colores = sns.color_palette("viridis", num_categorias)
+        colores = colores[::-1]
+
         mapeo_colores = dict(zip(df_egresos_agrupado['NombreGasto'].tolist(), colores))
         
 
