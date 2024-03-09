@@ -24,7 +24,9 @@ def estadisticas_egresos(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
+        
         data_periodo=estadistica_egresos_periodo(id_user,anno,mes)
+        
         data_concepto=estadistica_egresos_conceptos(id_user,anno,mes)
         data_categoria=estadistica_egresos_categoria(id_user,anno,mes)
         data_comportamiento_gasto=estadistica_egresos_quince_dias(id_user,anno,mes)
