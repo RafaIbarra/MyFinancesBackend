@@ -8,7 +8,8 @@ from Conexion.Serializadores.GastosSerializers import *
 from Conexion.Serializadores.ProductosFinancierosSerializers import *
 from Conexion.Serializadores.MesesSerializers import *
 from Conexion.Serializadores.CategoriasGastosSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos
+from Conexion.Serializadores.UsuariosSerializers import *
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 import time
@@ -339,6 +340,57 @@ def eliminarcategorias(request):
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
+
+@api_view(['POST'])
+def obtenerdatosusuario(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        
+
+        condicion1 = Q(id__exact=id_user)
+        datos_usuario=Usuarios.objects.filter(condicion1)
+        result_serializer=UsuariosSerializer(datos_usuario,many=True)
+        return Response(result_serializer.data,status= status.HTTP_200_OK)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['POST'])
+def actualizardatosusuario(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        condicion1 = Q(id__exact=id_user)
+        datos_usuario=list(Usuarios.objects.filter(condicion1).values())
+        user=datos_usuario[0]['user_name']
+        ultconex=datos_usuario[0]['ultima_conexion']
+        fechareg=datos_usuario[0]['fecha_registro']
+        datasave={
+            "id":  id_user,
+            "nombre_usuario":  request.data['nombre'],
+            "apellido_usuario": request.data['apellido'],
+            "fecha_nacimiento": request.data['fechanacimiento'],
+            "correo": request.data['correo'],
+            "user_name":user,
+            "ultima_conexion":ultconex,
+            "fecha_registro":fechareg,
+        
+        }
+        
+        
+        existente=Usuarios.objects.get(condicion1)
+        
+        usuario_serializer=UsuariosSerializer(existente,data=datasave)
+        if usuario_serializer.is_valid():
+            usuario_serializer.save()
+            
+            return Response(usuario_serializer.data,status= status.HTTP_200_OK)
+        return Response({'message':usuario_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
 

@@ -35,11 +35,11 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
         df_resultado['Saldo']=df_resultado['SumaMontoIngreso'] - df_resultado['SumaMontoEgreso']
         df_resultado['PorcentajeEgreso']= round( df_resultado['SumaMontoEgreso']/df_resultado['SumaMontoIngreso'] * 100 , 2)
         df_resultado['PorcentajeSaldo']=round(df_resultado['Saldo'] / df_resultado['SumaMontoIngreso'] * 100 , 2)
-
+        print(df_resultado)
         # categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100 # datos para el grafico
         mayor_saldo = df_resultado.loc[df_resultado['Saldo'].idxmax()]
         mayor_indice = df_resultado.loc[df_resultado['PorcentajeSaldo'].idxmax()]
-        
+        promedio_indice = df_resultado['PorcentajeSaldo'].mean()
         resultado_mayor_saldo = [{
                                     'MesOperacion': mayor_saldo['NombreMesOperacion'],
                                     'MontoIngreso': mayor_saldo['SumaMontoIngreso'],
@@ -63,12 +63,14 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
                                     }, 
                                       
                                 ]
-        
+        titulo= 'INDICE DE MAYOR SALDO DEL AÑO ' + str(anno)
+        imagenindice=titulo=grafico_indice_saldo(df_resultado,titulo,promedio_indice)
         imagen=grafico_saldos_periodos(df_resultado)
         result=[
             {'MayorSaldo':resultado_mayor_saldo},
             {'MayorIndice':resultado_mayor_indice},
             {'grafico':imagen},
+            {'graficoindice':imagenindice},
 
         ]
         return result

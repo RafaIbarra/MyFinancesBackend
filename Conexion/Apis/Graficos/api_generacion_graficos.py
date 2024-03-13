@@ -25,6 +25,65 @@ from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.BalanceSerializers import *
 
 
+def generar_graf_torta_resumen(ingresos,egresos):
+    data_egresos = egresos
+    data_ingresos=ingresos
+    if data_ingresos and data_egresos:
+        
+
+        df_data_egresos=pd.DataFrame(data_egresos)
+        df_data_egresos['Periodo']=df_data_egresos['NombreMesEgreso'] + '-' + df_data_egresos['AnnoEgreso'].astype(str)
+        df_data_egresos=df_data_egresos.reset_index()
+
+        df_data_egreso_agrupado = df_data_egresos.groupby(['AnnoEgreso', 'MesEgreso','NombreMesEgreso','Periodo']).agg({'monto_gasto': ['sum']})
+        df_data_egreso_agrupado.columns = ['SumaMontoEgreso']
+        df_data_egreso_agrupado = df_data_egreso_agrupado.sort_values(by=['AnnoEgreso', 'MesEgreso'], ascending=[True, True])
+        df_data_egreso_agrupado = df_data_egreso_agrupado.reset_index()
+
+
+        df_data_ingresos=pd.DataFrame(data_ingresos)
+        df_data_ingresos['Periodo']=df_data_ingresos['NombreMesIngreso'] + '-' + df_data_ingresos['AnnoIngreso'].astype(str)
+        df_data_ingresos=df_data_ingresos.reset_index()
+
+        df_data_ingresos_agrupado = df_data_ingresos.groupby(['AnnoIngreso', 'MesIngreso','NombreMesIngreso','Periodo']).agg({'monto_ingreso': ['sum']})
+        df_data_ingresos_agrupado.columns = ['SumaMontoIngreso']
+        df_data_ingresos_agrupado = df_data_ingresos_agrupado.sort_values(by=['AnnoIngreso', 'MesIngreso'], ascending=[True, True])
+        df_data_ingresos_agrupado = df_data_ingresos_agrupado.reset_index()
+
+        df_resultado = pd.merge(df_data_ingresos_agrupado, df_data_egreso_agrupado, on='Periodo', how='inner')
+        df_resultado=df_resultado.rename(columns={'AnnoIngreso':'AnnoOperacion','MesIngreso':'MesOperacion', 'NombreMesIngreso':'NombreMesOperacion'})
+        columns_to_drop = ['AnnoEgreso', 'MesEgreso','NombreMesEgreso']
+        df_resultado = df_resultado.drop(columns=columns_to_drop)
+
+        df_resultado['Saldo']=df_resultado['SumaMontoIngreso'] - df_resultado['SumaMontoEgreso']
+        df_resultado['PorcentajeEgreso']= round( df_resultado['SumaMontoEgreso']/df_resultado['SumaMontoIngreso'] * 100 , 2)
+        df_resultado['PorcentajeSaldo']=round(df_resultado['Saldo'] / df_resultado['SumaMontoIngreso'] * 100 , 2)
+        
+        fila1=pd.DataFrame({'Concepto': 'Saldo Disponible', 'Monto': df_resultado['Saldo'].to_list()})
+        fila2=pd.DataFrame({'Concepto': 'Total Egreso', 'Monto': df_resultado['SumaMontoEgreso'].to_list()})
+        
+        df_nuevo = pd.concat([ fila1, fila2], ignore_index=True)
+        labels =df_nuevo['Concepto'].tolist()
+        valores = df_nuevo['Monto'].tolist()
+        colors = ['skyblue', 'lightcoral']
+        fig, ax = plt.subplots()
+        ax.pie(valores, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+
+        centre_circle = plt.Circle((0,0),0.7,fc='white')
+        fig = plt.gcf()
+        fig.gca().add_artist(centre_circle)
+        ax.axis('equal')  # Aspecto igual para asegurar que el círculo sea realmente un círculo
+        
+        buffer = BytesIO()
+        fig.savefig(buffer, format='png')
+        imagen_resumen_bytes = buffer.getvalue()
+
+        
+        imagen_resumen_bytes_b64 = base64.b64encode(imagen_resumen_bytes).decode('utf-8') 
+    
+        return  imagen_resumen_bytes_b64
+        
+
 def generar_graf_barra_resumen(id_user,anno,mes):
     
     # Obtener datos de la base de datos

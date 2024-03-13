@@ -16,8 +16,7 @@ class Usuarios(models.Model):
         db_table="Usuarios"
                
 
-    def __str__(self):
-        return (f"{self.nombre_usuario.capitalize()} , {self.apellido_usuario.capitalize()}")
+    
     
 
 class TiposGastos(models.Model):

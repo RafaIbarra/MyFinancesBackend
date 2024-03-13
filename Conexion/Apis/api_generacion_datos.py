@@ -202,7 +202,8 @@ def datos_resumen(user,anno,mes):
                 }
     r_final = ResumenSerializers(resumen_data)
     if r_final.data:
-        imagen_resumen=generar_graf_barra_resumen(user,anno,mes)
+        # imagen_resumen=generar_graf_barra_resumen(user,anno,mes)
+        imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
         imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
         imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
         return{

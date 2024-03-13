@@ -21,6 +21,9 @@ urlpatterns = [
 
     path('RegistroIngreso/',registroingreso,name='registroingreso'),
     path('EliminarIngreso/',eliminaringreso,name='eliminaringreso'),
+
+    path('ObtenerDatosUsuario/',obtenerdatosusuario,name='obtenerdatosusuario'),
+    path('ActualizarDatosUsuario/',actualizardatosusuario,name='actualizardatosusuario'),
     
 
 ]

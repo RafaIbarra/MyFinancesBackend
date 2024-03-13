@@ -19,6 +19,12 @@ def format_with_commas(value, pos):
     return '{:,}'.format(int(value))
 
 
+def porcentaje_formatter(x, _):
+    # return f'{x:.0%}'
+    return f'{x:.000%}'
+
+
+
 def grafico_saldos_periodos(data):
 
     horizontal=data['NombreMesOperacion'].tolist()
@@ -46,9 +52,9 @@ def grafico_saldos_periodos(data):
     # ax.set_xticks([p for p in bar_positions])
     ax.set_xticklabels(horizontal)
     ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
-    ax.set_xlabel('Periodo')
-    ax.set_ylabel('Montos')
-    ax.set_title('Ingresos y Egresos por Periodo')
+    ax.set_xlabel('Meses', fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
+    ax.set_ylabel('Montos de ingresos', fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
+    ax.set_title('Ingresos y Egresos por Periodo', fontdict = {'fontsize':12, 'fontweight':'bold', 'color':'tab:blue'})
     plt.yticks(fontsize=8)
     plt.xticks(fontsize=9)
     ax.legend()
@@ -59,3 +65,39 @@ def grafico_saldos_periodos(data):
     imagen_saldo_periodo_b64 = base64.b64encode(imagen_saldo_periodo_bytes).decode('utf-8')
     plt.close('all')
     return imagen_saldo_periodo_b64
+
+
+def grafico_indice_saldo(data,titulo,promedio_periodo):
+    
+    periodos=data['NombreMesOperacion'].to_list()
+    montos=data['PorcentajeSaldo'].to_list()
+    tamañoperiodos=len(periodos)
+    fig, ax = plt.subplots(figsize=(tamañoperiodos, 4.5))
+    
+    ax.plot(periodos, montos, color = 'tab:purple', marker = 'o')
+
+    
+    ax.axhline(y=promedio_periodo, color='r', linestyle='-',label='Promedio')
+    ax.legend()
+
+    
+    
+    ax.set_yticklabels([f'{p:.2f}%' for p in ax.get_yticks()])
+    # ax.get_yaxis().get_major_formatter().set_scientific(False)
+    ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
+    ax.set_xlabel("MESES", fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
+    ax.set_ylabel("PORCENTAJE SALDOS", fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
+    
+    
+    ax.set_title(titulo, loc = "center", fontdict = {'fontsize':12, 'fontweight':'bold', 'color':'tab:blue'})
+    
+    ax.legend()
+    
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png')
+    buffer.seek(0)
+    imagen_grafico_lineas_bytes = buffer.getvalue()
+    imagen_grafico_lineas_b64 = base64.b64encode(imagen_grafico_lineas_bytes).decode('utf-8') 
+    plt.close('all')
+    return imagen_grafico_lineas_b64
+    
