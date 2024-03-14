@@ -83,7 +83,7 @@ def grafico_indice_saldo(data,titulo,promedio_periodo):
 
     # for i, valor in enumerate(montos):
     #     plt.text(i, valor, f'{valor}%',ha='left', va='bottom', fontsize=9)
-    desplazamiento = -2
+    desplazamiento = -1
     for i, valor in enumerate(montos):
         plt.text(i, valor + desplazamiento, f'{valor}%', ha='right', va='bottom', fontsize=9)
 
