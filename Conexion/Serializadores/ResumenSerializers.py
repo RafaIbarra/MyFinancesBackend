@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from Conexion.Serializadores.BalanceSerializers import *
+from Conexion.Serializadores.SaldosPeriodoSerializers import *
 
 class ResumenSerializers(serializers.Serializer):
     Resumen = BalanceSerializers(many=True)
     Ingresos = serializers.SerializerMethodField()
     Egresos = serializers.SerializerMethodField()
+    Saldos=SaldosPeriodoSerializers(many=True)
 
     def get_Ingresos(self, obj):
         

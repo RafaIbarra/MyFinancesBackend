@@ -6,6 +6,7 @@ from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.BalanceSerializers import *
 from Conexion.Serializadores.ResumenSerializers import *
+from Conexion.Serializadores.SaldosPeriodoSerializers import *
 from django.utils import timezone
 from datetime import datetime
 import pandas as pd
@@ -188,17 +189,67 @@ def datos_balance(user,anno,mes):
     else:
         return[]
     
-def datos_resumen(user,anno,mes):
-    egresos=datos_egresos(user,anno,mes)
-    
-    ingresos=datos_ingresos(user,anno,mes)
-    
 
+def datos_saldos_periodos(user,anno):
+    data_egresos = datos_egresos(user,anno,0)
+    data_ingresos=datos_ingresos(user,anno,0)
+
+    if data_ingresos and data_egresos:
+        
+
+        df_data_egresos=pd.DataFrame(data_egresos)
+        df_data_egresos['Periodo']=df_data_egresos['NombreMesEgreso'] + '-' + df_data_egresos['AnnoEgreso'].astype(str)
+        df_data_egresos=df_data_egresos.reset_index()
+
+        df_data_egreso_agrupado = df_data_egresos.groupby(['AnnoEgreso', 'MesEgreso','NombreMesEgreso','Periodo']).agg({'monto_gasto': ['sum']})
+        df_data_egreso_agrupado.columns = ['TotalEgreso']
+        df_data_egreso_agrupado = df_data_egreso_agrupado.sort_values(by=['AnnoEgreso', 'MesEgreso'], ascending=[True, True])
+        df_data_egreso_agrupado = df_data_egreso_agrupado.reset_index()
+
+
+        df_data_ingresos=pd.DataFrame(data_ingresos)
+        df_data_ingresos['Periodo']=df_data_ingresos['NombreMesIngreso'] + '-' + df_data_ingresos['AnnoIngreso'].astype(str)
+        df_data_ingresos=df_data_ingresos.reset_index()
+
+        df_data_ingresos_agrupado = df_data_ingresos.groupby(['AnnoIngreso', 'MesIngreso','NombreMesIngreso','Periodo']).agg({'monto_ingreso': ['sum']})
+        df_data_ingresos_agrupado.columns = ['TotalIngreso']
+        df_data_ingresos_agrupado = df_data_ingresos_agrupado.sort_values(by=['AnnoIngreso', 'MesIngreso'], ascending=[True, True])
+        df_data_ingresos_agrupado = df_data_ingresos_agrupado.reset_index()
+
+        df_resultado = pd.merge(df_data_ingresos_agrupado, df_data_egreso_agrupado, on='Periodo', how='inner')
+        df_resultado=df_resultado.rename(columns={'AnnoIngreso':'AnnoOperacion','MesIngreso':'MesOperacion', 'NombreMesIngreso':'NombreMesOperacion'})
+        columns_to_drop = ['AnnoEgreso', 'MesEgreso','NombreMesEgreso','MesOperacion']
+        df_resultado = df_resultado.drop(columns=columns_to_drop)
+
+        df_resultado['Saldo']=df_resultado['TotalIngreso'] - df_resultado['TotalEgreso']
+        df_resultado['PorcentajeEgreso']= round( df_resultado['TotalEgreso']/df_resultado['TotalIngreso'] * 100 , 2)
+        df_resultado['PorcentajeSaldo']=round(df_resultado['Saldo'] / df_resultado['TotalIngreso'] * 100 , 2)
+        
+        data_list = df_resultado.to_dict(orient='records')
+    
+        resultado=SaldosPeriodoSerializers(data=data_list,many=True)
+        
+        # categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100 # datos para el grafico
+        
+       
+        if  resultado.is_valid():
+            return(resultado.data)
+        return[]
+    else:
+        return[]
+    
+def datos_resumen(user,anno,mes):
+    saldosperiodo=datos_saldos_periodos(user,anno)
+    egresos=datos_egresos(user,anno,mes)
+    ingresos=datos_ingresos(user,anno,mes)
     balance=datos_balance(user,anno,mes)
+
+
     resumen_data={
                     'Resumen':balance,
                     'Ingresos':ingresos,
-                    'Egresos':egresos
+                    'Egresos':egresos,
+                    'Saldos':saldosperiodo
                 }
     r_final = ResumenSerializers(resumen_data)
     if r_final.data:

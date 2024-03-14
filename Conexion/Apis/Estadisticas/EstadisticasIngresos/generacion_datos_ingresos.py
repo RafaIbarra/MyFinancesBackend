@@ -35,15 +35,17 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
         df_resultado['Saldo']=df_resultado['SumaMontoIngreso'] - df_resultado['SumaMontoEgreso']
         df_resultado['PorcentajeEgreso']= round( df_resultado['SumaMontoEgreso']/df_resultado['SumaMontoIngreso'] * 100 , 2)
         df_resultado['PorcentajeSaldo']=round(df_resultado['Saldo'] / df_resultado['SumaMontoIngreso'] * 100 , 2)
-        print(df_resultado)
+        
         # categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100 # datos para el grafico
         mayor_saldo = df_resultado.loc[df_resultado['Saldo'].idxmax()]
+        
         mayor_indice = df_resultado.loc[df_resultado['PorcentajeSaldo'].idxmax()]
         promedio_indice = df_resultado['PorcentajeSaldo'].mean()
         resultado_mayor_saldo = [{
                                     'MesOperacion': mayor_saldo['NombreMesOperacion'],
                                     'MontoIngreso': mayor_saldo['SumaMontoIngreso'],
                                     'MontoEgreso': mayor_saldo['SumaMontoEgreso'],
+                                    'Saldo': mayor_saldo['Saldo'],
                                     'PorcentajeEgreso':mayor_saldo['PorcentajeEgreso'],
                                     'PorcentajeSaldo':mayor_saldo['PorcentajeSaldo'],
                                     'Periodo':mayor_saldo['Periodo']
@@ -56,6 +58,7 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
                                     'MesOperacion': mayor_indice['NombreMesOperacion'],
                                     'MontoIngreso': mayor_indice['SumaMontoIngreso'],
                                     'MontoEgreso': mayor_indice['SumaMontoEgreso'],
+                                    'Saldo': mayor_indice['Saldo'],
                                     'PorcentajeEgreso':mayor_indice['PorcentajeEgreso'],
                                     'PorcentajeSaldo':mayor_indice['PorcentajeSaldo'],
                                     'Periodo':mayor_indice['Periodo']
