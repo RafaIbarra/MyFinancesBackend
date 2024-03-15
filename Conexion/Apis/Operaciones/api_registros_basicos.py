@@ -9,14 +9,19 @@ from Conexion.Serializadores.ProductosFinancierosSerializers import *
 from Conexion.Serializadores.MesesSerializers import *
 from Conexion.Serializadores.CategoriasGastosSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios
+from Conexion.Serializadores.SolicitudPasswordSerializers import *
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 import time
 import ast
 from django.utils import timezone
+from datetime import  timedelta
+import random
 
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 @api_view(['POST'])
 def registrogasto(request):
@@ -391,8 +396,60 @@ def actualizardatosusuario(request):
         
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def enviocorreocontraseña(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        condicion1 = Q(id__exact=id_user)
+        datos_usuario=list(Usuarios.objects.filter(condicion1).values())
+        user=datos_usuario[0]['user_name']
+        nombre_user=datos_usuario[0]['nombre_usuario']
+        apellido_user=datos_usuario[0]['apellido_usuario']
+        correo_user=datos_usuario[0]['correo']
+        codigo=random.randint(100000, 999999)
+        fecha_reg=datetime.now()
+        fecha_venc=datetime.now() + timedelta(minutes=15)
+        datasave={
+            
+            "user": id_user,
+            "codigo_recuperacion": codigo,
+            "fecha_creacion": fecha_reg,
+            "fecha_vencimiento": fecha_venc,
+            
+        }
+        
+        
+        
+        solicitud_serializer=SolicitudPasswordSerializers(data=datasave)
+        if solicitud_serializer.is_valid():
+            solicitud_serializer.save()
+            Nombre=nombre_user + '; ' +apellido_user
+            user_name=user
+            fecha=fecha_reg.strftime("%d/%m/%Y %H:%M:%S")
+            fecha_validez=fecha_venc.strftime("%d/%m/%Y %H:%M:%S")
+            html_content = render_to_string('correo.html', {'Nombre': Nombre, 'user_name': user_name, 'fecha_validez':fecha_validez,'codigo':codigo})
+            text_content = strip_tags(html_content)
+            subject = 'Cambio de Contraseña'
+            from_email = 'myfinancesweb@gmail.com'
+            to_email = correo_user
+            
 
+            email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+            email.attach_alternative(html_content, 'text/html')  # Adjuntar el contenido HTML
 
+            try:
+                email.send()
+                return Response({'mensaje': 'Correo enviado a ' + correo_user})
+            except Exception as e:
+                return Response({'mensaje': f'Error al enviar el correo: {str(e)}'})
+        
+
+        return Response({'message':solicitud_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
 

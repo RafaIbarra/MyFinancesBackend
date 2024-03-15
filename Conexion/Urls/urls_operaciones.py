@@ -24,6 +24,8 @@ urlpatterns = [
 
     path('ObtenerDatosUsuario/',obtenerdatosusuario,name='obtenerdatosusuario'),
     path('ActualizarDatosUsuario/',actualizardatosusuario,name='actualizardatosusuario'),
+
+    path('EnvioCorreoPassword/',enviocorreocontraseña,name='enviocorreocontraseña'),
     
 
 ]

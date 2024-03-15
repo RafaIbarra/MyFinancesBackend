@@ -187,7 +187,7 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
         
 
         result_distribucion=distribucion_mayores.reset_index()
-        print(distribucion_menores_agrupado)
+        
         nueva_fila={'NombreGasto':'Otros ' + str(distribucion_menores_agrupado['CantidadMenores'].iloc[0])+' conceptos',
                     'CategoriaGasto':distribucion_menores_agrupado['CategoriaGasto'].iloc[0],
                     'monto_gasto':distribucion_menores_agrupado['MontoMenores'].iloc[0],

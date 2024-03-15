@@ -27,6 +27,7 @@ from django.db.models import Q
 from Conexion.Serializadores.CustomsSerializers import *
 from Conexion.Serializadores.SesionesActivasSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
+from Conexion.Serializadores.CategoriasGastosSerializers import *
 from Conexion.models import Usuarios,SesionesActivas
 from MyFinancesBackend.settings import TIEMPO_SESION_HORAS
 from Conexion.Seguridad.validaciones import resgistrosesion
@@ -113,9 +114,20 @@ class Registro(TokenObtainPairView):
         password = request.data.get('password', '')
         password=password.replace(" ", "")
         user_reg=formato_user(user)
-        try:
+        condicion1 = Q(username__exact=user_reg)
+        existente=User.objects.filter(condicion1).values()
+
+        if not existente:
+            
+                
+            user_registrar = User.objects.create_user(user_reg, password=password)
+            user_registrar.save()
+            condicion1 = Q(username__exact=user_reg)
+            datosnuevo=list(User.objects.filter(condicion1).values())
+            id_nuevo=datosnuevo[0]['id']
             data_user=(
                 {
+                    'id':id_nuevo,
                     'nombre_usuario':nombre,
                     'apellido_usuario':apellido,
                     'fecha_nacimiento':nacimiento,
@@ -128,20 +140,37 @@ class Registro(TokenObtainPairView):
             
             user_serializer=UsuariosSerializer(data=data_user)
             if user_serializer.is_valid():
+
                 user_serializer.save()
-                user_registrar = User.objects.create_user(user_reg, password=password)
-                user_registrar.save()
+                n=1
+                while n < 3:
+                    print('entra a crear las categorias')
+                    if n==1:
+                        catnombre='Servicios'
+                    else:
+                        catnombre='Productos'
+                    data_list_cat1 = []
+                    datasavecat1={
+                        "user": id_nuevo,
+                        "nombre_categoria": catnombre,
+                        "fecha_registro": datetime.now()
+                        
+                    }
+                    data_list_cat1.append(datasavecat1)
+                    categoria1_serializer=CategoriaGastosSerializers(data=datasavecat1)
+                    if categoria1_serializer.is_valid():
+                        categoria1_serializer.save()
+                    else:
+                        print(categoria1_serializer.errors)
+                    n=n+1
+            
                 user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
                 
-                
-            
-                
                 token,created=Token.objects.get_or_create(user=user_registrar)
-               
+            
                 datasesion=({
                     'user_name':user_reg,
                     'fecha_conexion':datetime.now(),
-                    
                     'token_session':token.key,
                     'dispositivo':user_agent,
                     
@@ -170,12 +199,26 @@ class Registro(TokenObtainPairView):
                         'user_name':user_reg.capitalize(),
                         'message': 'Inicio de Sesion Existoso'
                     }, status=status.HTTP_200_OK)
-                return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
                 
+                
+            else :
+                
+                mensajes_error = {}
 
-             
-        except IntegrityError:
-             return Response({'message':'Error de creacion'},status= status.HTTP_400_BAD_REQUEST)
+                for campo, detalles in user_serializer.errors.items():
+                    mensaje = detalles[0]
+                    if hasattr(mensaje, 'string'):
+                        mensajes_error[campo] = mensaje.string
+                    else:
+                        mensajes_error[campo] = str(mensaje)
+
+                user_registrar.delete()
+                return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST)   
+    
+        else:
+            mensajes_error = {}
+            mensajes_error['Username']='Ya se creo el usuario ' + user_reg
+            return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST) 
 
 class NotFoundView(APIView):
     """
@@ -190,6 +233,15 @@ class NotFoundView(APIView):
 
     def post(self, request, *args, **kwargs):
         return Response({"message": "La ruta solicitada no se encuentra"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+
+            
+        
+
+
+
 
 
 def formato_user(data):

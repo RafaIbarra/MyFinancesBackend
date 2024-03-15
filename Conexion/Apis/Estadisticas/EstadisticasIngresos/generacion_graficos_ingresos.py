@@ -33,7 +33,7 @@ def grafico_saldos_periodos(data):
     
     saldos=data['Saldo'].tolist()
     num_barras = len(horizontal)
-    print(num_barras)
+    
 
     color_verde_transparente = to_rgba('blue', alpha=0.2)
 
@@ -83,9 +83,9 @@ def grafico_indice_saldo(data,titulo,promedio_periodo):
 
     # for i, valor in enumerate(montos):
     #     plt.text(i, valor, f'{valor}%',ha='left', va='bottom', fontsize=9)
-    desplazamiento = -1
+    desplazamiento = 0.1
     for i, valor in enumerate(montos):
-        plt.text(i, valor + desplazamiento, f'{valor}%', ha='right', va='bottom', fontsize=9)
+        plt.text(i, valor + desplazamiento, f'{valor}%', ha='left', va='bottom', fontsize=9)
 
     ax.axhline(y=promedio_periodo, color='r', linestyle='-',label='Promedio')
     ax.legend()

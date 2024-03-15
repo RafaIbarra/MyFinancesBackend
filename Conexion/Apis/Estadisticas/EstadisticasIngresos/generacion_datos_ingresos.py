@@ -40,7 +40,7 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
         mayor_saldo = df_resultado.loc[df_resultado['Saldo'].idxmax()]
         
         mayor_indice = df_resultado.loc[df_resultado['PorcentajeSaldo'].idxmax()]
-        promedio_indice = df_resultado['PorcentajeSaldo'].mean()
+        promedio_indice = round(df_resultado['PorcentajeSaldo'].mean(),2)
         resultado_mayor_saldo = [{
                                     'MesOperacion': mayor_saldo['NombreMesOperacion'],
                                     'MontoIngreso': mayor_saldo['SumaMontoIngreso'],
@@ -61,7 +61,8 @@ def estadisticas_saldos_periodos(id_user,anno,mes):
                                     'Saldo': mayor_indice['Saldo'],
                                     'PorcentajeEgreso':mayor_indice['PorcentajeEgreso'],
                                     'PorcentajeSaldo':mayor_indice['PorcentajeSaldo'],
-                                    'Periodo':mayor_indice['Periodo']
+                                    'Periodo':mayor_indice['Periodo'],
+                                    'PromedioInidice':promedio_indice
 
                                     }, 
                                       

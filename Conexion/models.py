@@ -34,7 +34,7 @@ class TiposGastos(models.Model):
 class CategoriaGastos(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
     user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
-    nombre_categoria=models.CharField(max_length=200,blank=False,unique=True)
+    nombre_categoria=models.CharField(max_length=200,blank=False)
     fecha_registro=models.DateTimeField("fecha registro")
 
     class Meta:
@@ -153,4 +153,17 @@ class Meses(models.Model):
     def __str__(self):
         return (f"{self.nombre_mes.capitalize()} , {self.nombre_mes.capitalize()}")
 
+
+class SolicitudPassword(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
+    codigo_recuperacion=models.IntegerField()
+    fecha_creacion=models.DateTimeField("fecha creacion",blank=False)
+    fecha_vencimiento=models.DateTimeField("fecha vencimiento",blank=False)
+    fecha_procesamiento=models.DateTimeField("fecha vencimiento",blank=True,null=True)
+
+    class Meta:
+        db_table="SolicitudPassword"
+                   
+    
 
