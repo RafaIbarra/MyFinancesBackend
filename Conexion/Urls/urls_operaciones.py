@@ -26,6 +26,8 @@ urlpatterns = [
     path('ActualizarDatosUsuario/',actualizardatosusuario,name='actualizardatosusuario'),
 
     path('EnvioCorreoPassword/',enviocorreocontraseña,name='enviocorreocontraseña'),
+    path('ComprobarCodigo/',comprobarcodigo,name='comprobarcodigo'),
+    path('ActualizarPassword/',actualizarpassword,name='actualizarpassword'),
     
 
 ]

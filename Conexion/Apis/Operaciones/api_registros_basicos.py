@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import Q
 from datetime import datetime
+from django.contrib.auth.models import User
 # from Conexion.Serializers import GastosSerializers,ProductosFinancierosSerializers,MesesSerializers
 from Conexion.Serializadores.GastosSerializers import *
 from Conexion.Serializadores.ProductosFinancierosSerializers import *
@@ -18,6 +19,7 @@ import ast
 from django.utils import timezone
 from datetime import  timedelta
 import random
+import pytz
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -410,7 +412,7 @@ def enviocorreocontraseña(request):
         correo_user=datos_usuario[0]['correo']
         codigo=random.randint(100000, 999999)
         fecha_reg=datetime.now()
-        fecha_venc=datetime.now() + timedelta(minutes=15)
+        fecha_venc=datetime.now() + timedelta(minutes=60)
         datasave={
             
             "user": id_user,
@@ -419,8 +421,6 @@ def enviocorreocontraseña(request):
             "fecha_vencimiento": fecha_venc,
             
         }
-        
-        
         
         solicitud_serializer=SolicitudPasswordSerializers(data=datasave)
         if solicitud_serializer.is_valid():
@@ -438,12 +438,12 @@ def enviocorreocontraseña(request):
 
             email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
             email.attach_alternative(html_content, 'text/html')  # Adjuntar el contenido HTML
-
-            try:
-                email.send()
-                return Response({'mensaje': 'Correo enviado a ' + correo_user})
-            except Exception as e:
-                return Response({'mensaje': f'Error al enviar el correo: {str(e)}'})
+            return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
+            # try:
+            #     email.send()
+            #     return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
+            # except Exception as e:
+            #     return Response({'mensaje': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
         
 
         return Response({'message':solicitud_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
@@ -452,5 +452,99 @@ def enviocorreocontraseña(request):
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
+@api_view(['POST'])
+def comprobarcodigo(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        codigo_respuesta=request.data['codigo']
+        result=resultado_codigo(id_user,codigo_respuesta)
+        if result=='OK':
+            return Response({'mensaje': 'OK' },status=status.HTTP_200_OK)
+        else:
+            return Response({'error':result},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+@api_view(['POST'])
+def actualizarpassword(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        passwor1=request.data['password']
+        passwor2=request.data['password2']
+        codigo_respuesta=request.data['codigo']
+
+        result=resultado_codigo(id_user,codigo_respuesta)
+        if result=='OK':
+            if passwor1==passwor2:
+                try:
+                    usuario=User.objects.get(username=usuario)
+                    usuario.set_password(passwor1)
+                    usuario.save()
+
+                    condicion1 = Q(codigo_recuperacion__exact=codigo_respuesta)
+                    condicion2= Q(user_id__exact=id_user)
+                    datos_solicitud=list(SolicitudPassword.objects.filter(condicion1 & condicion2).values())
+
+                    datasave={
+                        "id":  datos_solicitud[0]['id'],
+                        "user":  id_user,
+                        "codigo_recuperacion": datos_solicitud[0]['codigo_recuperacion'],
+                        "fecha_creacion": datos_solicitud[0]['fecha_creacion'],
+                        "fecha_vencimiento": datos_solicitud[0]['fecha_vencimiento'],
+                        "fecha_procesamiento":datetime.now()
+                    }
+        
+                    condicion=Q(id__exact=datos_solicitud[0]['id'])
+                    existente=SolicitudPassword.objects.get(condicion)
+                    
+                    sol_serializer=SolicitudPasswordSerializers(existente,data=datasave)
+                    if sol_serializer.is_valid():
+                        sol_serializer.save()
+                        return Response({'mensaje': 'Contraseña Actualizada' },status=status.HTTP_200_OK)
+                    else:
+                        return Response({'error':sol_serializer.errors},status=status.HTTP_400_BAD_REQUEST)    
+
+                except Exception as e:
+                    error=str(e)
+                    return Response({'error':error},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'mensaje': 'Las contraseñas no coinciden' },status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error':result},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+def resultado_codigo(id_user,codigo):
+    condicion1 = Q(codigo_recuperacion__exact=codigo)
+    condicion2= Q(user_id__exact=id_user)
+    datos_solicitud=list(SolicitudPassword.objects.filter(condicion1 & condicion2).values())
+    
+    if len(datos_solicitud) >0:
+        fecha_actual = datetime.now()
+        
+        fecha_vencimiento = datos_solicitud[0]['fecha_vencimiento']
+        zona_horaria_correcta = pytz.timezone("America/Asuncion")  # Zona horaria correcta
+        fecha_vencimiento = fecha_vencimiento.astimezone(zona_horaria_correcta)
+
+        fecha_actual = fecha_actual.replace(tzinfo=fecha_vencimiento.tzinfo)
+        
+        fecha_procesamiento=datos_solicitud[0]['fecha_procesamiento']
+        errores=''
+        if fecha_procesamiento != None:
+            errores=errores + 'El codigo ya fue utilizado'
+
+        if fecha_actual> fecha_vencimiento:
+            errores=errores + '. El codigo de seguridad ya vencio'
+        
+        if len(errores) ==0:
+            
+            return 'OK'
+        else:
+            return errores
+    else:
+        return 'El codigo no le pertence al usuario'
+    
 
 
