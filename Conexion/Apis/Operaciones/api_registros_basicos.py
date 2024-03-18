@@ -510,7 +510,7 @@ def actualizarpassword(request):
                     error=str(e)
                     return Response({'error':error},status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({'mensaje': 'Las contraseñas no coinciden' },status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Las contraseñas no coinciden' },status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error':result},status= status.HTTP_400_BAD_REQUEST)
     else:
