@@ -20,7 +20,7 @@ def format_with_commas(value, pos):
 
 
 def porcentaje_formatter(x, _):
-    # return f'{x:.0%}'
+   
     return f'{x:.000%}'
 
 
@@ -37,7 +37,7 @@ def grafico_saldos_periodos(data):
 
     color_verde_transparente = to_rgba('blue', alpha=0.2)
 
-    # barra agrupadas
+   
     fig, ax = plt.subplots(figsize=(12, 4.5))
 
     
@@ -51,14 +51,13 @@ def grafico_saldos_periodos(data):
 
     ax.get_yaxis().set_major_formatter(FuncFormatter(format_with_commas))
 
-    # ax.set_xticks([p for p in bar_positions])
+
     ax.set_xticklabels(horizontal)
     ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
     ax.set_xlabel('MESES', fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
     ax.set_ylabel('MONTOS INGRESOS', fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
     ax.set_title('Ingresos y Egresos por Periodo', fontdict = {'fontsize':12, 'fontweight':'bold', 'color':'tab:blue'})
-    # plt.yticks(fontsize=8)
-    # plt.xticks(fontsize=9)
+ 
     ax.legend()
     buffer = BytesIO()
     fig.savefig(buffer, format='png')
@@ -77,12 +76,7 @@ def grafico_indice_saldo(data,titulo,promedio_periodo):
     fig, ax = plt.subplots(figsize=(12, 4.5))
     
     ax.plot(periodos, montos, color = 'tab:purple', marker = 'o')
-    # for i in range(len(periodos)):
-    #     plt.annotate(f'{montos[i]}%', (periodos[i], montos[i]), textcoords="offset points", xytext=(0,10), ha='right', va='bottom')
-
-
-    # for i, valor in enumerate(montos):
-    #     plt.text(i, valor, f'{valor}%',ha='left', va='bottom', fontsize=9)
+   
     desplazamiento = 0.1
     for i, valor in enumerate(montos):
         plt.text(i, valor + desplazamiento, f'{valor}%', ha='left', va='bottom', fontsize=9)
@@ -90,11 +84,7 @@ def grafico_indice_saldo(data,titulo,promedio_periodo):
     ax.axhline(y=promedio_periodo, color='r', linestyle='-',label='Promedio')
     ax.legend()
 
-    
-    
-    ax.set_yticklabels([f'{p:.2f}%' for p in ax.get_yticks()])
-    
-    # ax.grid(axis = 'y', color = 'gray', linestyle = 'dashed')
+   
     ax.set_xlabel("MESES", fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
     ax.set_ylabel("PORCENTAJE SALDOS", fontdict = {'fontsize':9, 'fontweight':'bold', 'color':'tab:blue'})
     

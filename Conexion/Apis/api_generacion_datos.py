@@ -1,7 +1,6 @@
 from django.db.models import Q
 import pandas as pd
 from  Conexion.models import Egresos, Ingresos
-# from Conexion.Serializers import EgresosSerializers,IngresosSerializers,BalanceSerializers,ResumenSerializers
 from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.BalanceSerializers import *
@@ -10,8 +9,8 @@ from Conexion.Serializadores.SaldosPeriodoSerializers import *
 from django.utils import timezone
 from datetime import datetime
 import pandas as pd
-from Conexion.Apis.Graficos.api_generacion_graficos import *
 
+from Conexion.Apis.Operaciones.api_generacion_graficos import *
 def registros_ingresos(user,anno,mes):
     
     if anno>0:
@@ -153,10 +152,7 @@ def datos_balance(user,anno,mes):
 
     df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
     df_ingresos_agrupado['Codigo'] = 1
-    df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})
-
-    # if egresos and ingresos:
-        
+    df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})        
 
     df_final = pd.merge(df_ingresos_agrupado,df_egresos_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer', suffixes=('_Ingreso','_Egreso' ))
     df_final = df_final.fillna(0)
@@ -227,10 +223,7 @@ def datos_saldos_periodos(user,anno):
         
         data_list = df_resultado.to_dict(orient='records')
     
-        resultado=SaldosPeriodoSerializers(data=data_list,many=True)
-        
-        # categoria_maxima_perdiodo_cantidades['Porcentaje']=categoria_maxima_perdiodo_cantidades['CantidadVeces']/categoria_maxima_perdiodo_cantidades['CantidadRegistros']*100 # datos para el grafico
-        
+        resultado=SaldosPeriodoSerializers(data=data_list,many=True)    
        
         if  resultado.is_valid():
             return(resultado.data)
@@ -253,7 +246,6 @@ def datos_resumen(user,anno,mes):
                 }
     r_final = ResumenSerializers(resumen_data)
     if r_final.data:
-        # imagen_resumen=generar_graf_barra_resumen(user,anno,mes)
         imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
         imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
         imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)

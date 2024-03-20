@@ -11,7 +11,7 @@ from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 
 from Conexion.models import Gastos,Meses,ProductosFinancieros,CategoriaGastos
-# from Conexion.Serializers import GastosSerializers,MesesSerializers,ProductosFinancierosSerializers
+
 from Conexion.Serializadores.GastosSerializers import *
 from Conexion.Serializadores.CategoriasGastosSerializers import *
 from Conexion.Serializadores.MesesSerializers import *
@@ -27,7 +27,7 @@ def misingresos(request,anno,mes):
     if resp==True:
         lista_ingresos=datos_ingresos(id_user,anno,mes)
         if lista_ingresos:
-            # lista_ingresos=sorted(lista_ingresos, key=lambda x: x['fecha_registro'], reverse=False)
+          
             def custom_key(item):
                 fecha_ingreso = item.get('fecha_ingreso', '')
                 fecha_registro = item.get('fecha_registro', '')
@@ -110,7 +110,7 @@ def  misdatosregistroegreso (request):
     resp=validacionpeticion(token_sesion)
     if resp==True:           
         condicion1 = Q(user_id__exact=id_user)
-        # lista=Gastos.objects.filter(condicion1)
+      
         lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
         lista_Gastos = CategoriaGastos.objects.filter(condicion1).order_by('nombre_categoria')
         datos_gastos=[]
@@ -154,7 +154,7 @@ def misgastos(request):
     resp=validacionpeticion(token_sesion)
     if resp==True:           
         condicion1 = Q(user_id__exact=id_user)
-        # lista=Gastos.objects.filter(condicion1)
+   
         lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
         
         if lista:
@@ -197,7 +197,7 @@ def resumen(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True: 
-        # Obtener datos de la base de datos
+    
         
         datosresumen=datos_resumen(id_user,anno,mes)
         return Response(datosresumen, status=status.HTTP_200_OK)
@@ -213,7 +213,7 @@ def balance(request,anno,mes):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True: 
-        # Obtener datos de la base de datos
+        
         
         datosbalance=datos_balance(id_user,anno,mes)
         return Response(datosbalance, status=status.HTTP_200_OK)

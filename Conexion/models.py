@@ -56,8 +56,6 @@ class Gastos(models.Model):
         db_table="Gastos"
                
 
-    # def __str__(self):
-    #     return (f"{self.nombre_gasto.capitalize()} , {self.nombre_gasto.capitalize()}")
         
     def retorno_tipo_gasto_id(self):
         return self.tipogasto_id

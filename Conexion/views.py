@@ -23,7 +23,7 @@ from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.db.models import Q
 
-# from Conexion.Serializers import CustomTokenObtainPairSerializer,UsuariosSerializer,SesionesActivasSerializers,CustomUserSerializer
+
 from Conexion.Serializadores.CustomsSerializers import *
 from Conexion.Serializadores.SesionesActivasSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
@@ -80,20 +80,23 @@ class Login(TokenObtainPairView):
                 if sesion_serializers.is_valid():
                     
                     sesion_serializers.save()
-                else:
-                    print(sesion_serializers.errors)
                 
-                login_serializer = self.serializer_class(data=request.data)
-                if login_serializer.is_valid():
+                
+                    login_serializer = self.serializer_class(data=request.data)
+                    if login_serializer.is_valid():
+                        
+                        return Response({
+                            'token': login_serializer.validated_data.get('access'),
+                            'refresh': login_serializer.validated_data.get('refresh'),
+                            'sesion':token.key,
+                            'user_name':user_name.capitalize(),
+                            'message': 'Inicio de Sesion Existoso'
+                        }, status=status.HTTP_200_OK)
+                    return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
+                else :
                     
-                    return Response({
-                        'token': login_serializer.validated_data.get('access'),
-                        'refresh': login_serializer.validated_data.get('refresh'),
-                        'sesion':token.key,
-                        'user_name':user_name.capitalize(),
-                        'message': 'Inicio de Sesion Existoso'
-                    }, status=status.HTTP_200_OK)
-                return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': sesion_serializers.errors}, status=status.HTTP_400_BAD_REQUEST)
+                
 
             except Exception as e:
                 
@@ -144,7 +147,7 @@ class Registro(TokenObtainPairView):
                 user_serializer.save()
                 n=1
                 while n < 3:
-                    print('entra a crear las categorias')
+                    
                     if n==1:
                         catnombre='Servicios'
                     else:
@@ -160,8 +163,7 @@ class Registro(TokenObtainPairView):
                     categoria1_serializer=CategoriaGastosSerializers(data=datasavecat1)
                     if categoria1_serializer.is_valid():
                         categoria1_serializer.save()
-                    else:
-                        print(categoria1_serializer.errors)
+                    
                     n=n+1
             
                 user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
@@ -180,8 +182,7 @@ class Registro(TokenObtainPairView):
                 if sesion_serializers.is_valid():
                     
                     sesion_serializers.save()
-                else:
-                    print(sesion_serializers.errors)
+                
                 
                 datalogin={
                     'username':user_reg,
@@ -247,10 +248,6 @@ class NotFoundView(APIView):
 def formato_user(data):
     
     data = data.replace(" ", "")
-    
-    # Poner en minúsculas
     data = data.lower()
-    
-    # Quitar caracteres especiales utilizando expresiones regulares
     data = re.sub(r'[^a-zA-Z0-9]', '', data)
     return data

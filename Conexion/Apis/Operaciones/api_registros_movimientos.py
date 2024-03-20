@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status  
 from rest_framework.decorators import api_view
 from django.db.models import Q
-# from Conexion.Serializers import EgresosSerializers,IngresosSerializers
+
 from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.models import Egresos,Ingresos

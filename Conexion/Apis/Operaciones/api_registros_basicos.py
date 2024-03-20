@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.auth.models import User
-# from Conexion.Serializers import GastosSerializers,ProductosFinancierosSerializers,MesesSerializers
 from Conexion.Serializadores.GastosSerializers import *
 from Conexion.Serializadores.ProductosFinancierosSerializers import *
 from Conexion.Serializadores.MesesSerializers import *

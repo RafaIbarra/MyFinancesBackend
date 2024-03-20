@@ -33,9 +33,7 @@ def estadistica_egresos_periodo(id_user,anno,mes):
 
                                       }]
         result=[{'DatosMaximoGasto':resultado_concepto_maximo}]
-        # print(df_data_agrupado)
-        # print(resultado_concepto_maximo)
-        # print(promedio_periodo)
+        
         return result
     else:
         return []
@@ -96,7 +94,7 @@ def estadistica_egresos_categoria(id_user,anno,mes):
         df_data_egresos['Periodo']=df_data_egresos['NombreMesEgreso'] + '-' + df_data_egresos['AnnoEgreso'].astype(str)
         df_data_egresos=df_data_egresos.reset_index()
         
-        # print(df_data_egresos)
+        
         df_data_agrupado_categoria = df_data_egresos.groupby(['CategoriaGasto']).agg({'monto_gasto': ['sum', 'count']})
         df_data_agrupado_categoria.columns = ['SumaMonto', 'CantidadRegistros']
         df_data_agrupado_categoria = df_data_agrupado_categoria.reset_index()
@@ -169,7 +167,6 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
         nombre_mayor_categoria=datos_mayor_categoria['CategoriaGasto']
         
         
-        # detalle_concepto_maximo=df_data_egresos.loc[df_data_egresos['NombreGasto'] == nombre_concepto_maximo]
         distribucion_mayor_categoria=df_data_filtro.loc[df_data_filtro['CategoriaGasto']==nombre_mayor_categoria]
         distribucion_mayor_categoria=distribucion_mayor_categoria.reset_index()
         monto_total_distribucion=distribucion_mayor_categoria['monto_gasto'].sum()
@@ -182,8 +179,6 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
         distribucion_menores_agrupado=distribucion_menores.groupby(['CategoriaGasto']).agg({'monto_gasto': ['sum', 'count']})
         distribucion_menores_agrupado.columns = ['MontoMenores', 'CantidadMenores']
         distribucion_menores_agrupado=distribucion_menores_agrupado.reset_index()
-        # df_data_agrupado_conceptos = df_data_egresos.groupby(['NombreGasto']).agg({'monto_gasto': ['sum', 'count']})
-        # df_data_agrupado_conceptos.columns = ['SumaMonto', 'CantidadRegistros']
         
 
         result_distribucion=distribucion_mayores.reset_index()
@@ -196,8 +191,7 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
                     }
         
         
-        # result_distribucion = result_distribucion.append(nueva_fila, ignore_index=True)
-        # print(distribucion_menores_agrupado)
+       
         result_distribucion.loc[len(result_distribucion)] = nueva_fila
         result_distribucion=result_distribucion.reset_index()
         
@@ -228,9 +222,7 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
         valores.append({'DetallePeriodo':result_detalle_periodo})
         valores.append({'grafico':grafico_15dias})
         
-        # print(categoria_maxima_perdiodo_cantidades) ## data para el grafico
-        # for categoria,cantidad,cantidadregistros,porcentaje in result:
-        #     valores.append([{'CategoriaGasto':categoria,'CantidadVeces':cantidad,'CantidadRegistros':cantidadregistros,'Porcentaje':porcentaje}])
+       
 
         return valores
 
@@ -271,10 +263,10 @@ def estadistica_egresos_por_categoria(id_user,anno,mes):
                                 {'Porcentaje': concepto_maximo_montos['PorcentajeMontos']}, 
                                 {'TotalMontos': concepto_maximo_montos['TotalMontos']}, 
                                 ]
-            # print(concepto_maximo_montos)
+            
             ############################# Por Cantidades #######################
             concepto_maximo_cantidades = df_data_egresos_categoria_conceptos.loc[df_data_egresos_categoria_conceptos['CantidadRegistros'].idxmax()]
-            # print(concepto_maximo_cantidades)
+            
             result_cantidades = [   {'NombreGasto': concepto_maximo_cantidades['NombreGasto']},   
                                     {'Cantidad': concepto_maximo_cantidades['CantidadRegistros']}, 
                                     {'Porcentaje': concepto_maximo_cantidades['PorcentajeCantidades']}, 
