@@ -11,6 +11,7 @@ from Conexion.Serializadores.CategoriasGastosSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
 from Conexion.Serializadores.SolicitudPasswordSerializers import *
 from Conexion.Serializadores.TiposGastosSerializers import *
+from Conexion.Serializadores.TiposProductosFinancierosSerializers import *
 from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
@@ -92,8 +93,74 @@ def obtenertipogasto(request):
     else:
         return Response({'mensaje dato vacio':'sin datos'},status= status.HTTP_200_OK)
     
-    
+@api_view(['POST'])
+def registrotipoproduto(request):
 
+    data_list = []
+    data_errores=''
+    id=request.data['id']
+    datasave={
+        "id":  request.data['id'],
+        "nombre_tipo_producto":  request.data['nombre'],
+        "fecha_registro": datetime.now()
+        
+    }
+    data_list.append(datasave)
+    
+    if len(datasave['nombre_tipo_producto']) < 1:
+        mensaje='Ingrese el nombre para el concepto del gasto'
+        data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+    if len(data_errores)==0:
+        if int(id)>0:
+            condicion1 = Q(id__exact=id)
+            dato_existente=TiposProductosFinancieros.objects.filter(condicion1 )
+            if dato_existente:
+                
+                existente=TiposProductosFinancieros.objects.get(condicion1)
+                
+                tipo_producto_serializer=TiposProductosFinancierosSerializers(existente,data=datasave)
+
+            else:
+                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            tipo_producto_serializer=TiposProductosFinancierosSerializers(data=datasave)
+
+        if tipo_producto_serializer.is_valid():
+            tipo_producto_serializer.save()
+            
+            return Response(tipo_producto_serializer.data,status= status.HTTP_200_OK)
+
+        return Response({'message':tipo_producto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        
+        return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+def obtenertipoproducto(request):
+
+    
+    condicion1 = Q(id__gt=0)
+        
+    lista_categorias = TiposProductosFinancieros.objects.filter(condicion1)
+    
+    if lista_categorias:
+        
+        result_categoria_serializer=TiposProductosFinancierosSerializers(lista_categorias,many=True)
+
+        if result_categoria_serializer.data:
+                return Response(result_categoria_serializer.data,
+                            status= status.HTTP_200_OK)
+        else:
+
+            return Response({'message':result_categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            
+    else:
+        return Response({'mensaje dato vacio':'sin datos'},status= status.HTTP_200_OK)
+    
+    
+####################################################################################################################################
 @api_view(['POST'])
 def registrogasto(request):
 
