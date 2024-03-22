@@ -90,7 +90,7 @@ def obtenertipogasto(request):
             return Response({'message':result_categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
             
     else:
-        return Response({'message':'sin datos'},status= status.HTTP_200_OK)
+        return Response({'mensaje dato vacio':'sin datos'},status= status.HTTP_200_OK)
     
     
 
