@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from MyFinancesBackend.seguridad import configuracion
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -94,13 +96,15 @@ WSGI_APPLICATION = 'MyFinancesBackend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+pass_db = configuracion.PASS
+user_db = configuracion.USER
+name_db = configuracion.NAME
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Finanzas',
-        'USER':'postgres',
-        'PASSWORD':'rafael86',
+        'NAME': name_db,
+        'USER':user_db,
+        'PASSWORD':pass_db,
         'HOST':'localhost',
         'PORT':'',
         
@@ -185,7 +189,8 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True
 }
 
-
+hostmail=configuracion.DIR_EMAIL
+passmail=configuracion.PASS_EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_PORT = 587 

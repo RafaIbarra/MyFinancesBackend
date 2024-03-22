@@ -437,12 +437,12 @@ def enviocorreocontraseña(request):
 
             email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
             email.attach_alternative(html_content, 'text/html')  # Adjuntar el contenido HTML
-            return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
-            # try:
-            #     email.send()
-            #     return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
-            # except Exception as e:
-            #     return Response({'mensaje': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
+            # return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
+            try:
+                email.send()
+                return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'mensaje': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
         
 
         return Response({'message':solicitud_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
