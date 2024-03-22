@@ -26,6 +26,51 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 @api_view(['POST'])
+def registrotipogasto(request):
+
+    data_list = []
+    data_errores=''
+    id=request.data['id']
+    datasave={
+        "id":  request.data['id'],
+        "nombre_tipo_gasto":  request.data['nombre'],
+        "fecha_registro": datetime.now()
+        
+    }
+    data_list.append(datasave)
+    
+    if len(datasave['nombre']) < 1:
+        mensaje='Ingrese el nombre para el concepto del gasto'
+        data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+    if len(data_errores)==0:
+        if id>0:
+            condicion1 = Q(id__exact=id)
+            dato_existente=CategoriaGastos.objects.filter(condicion1 )
+            if dato_existente:
+                
+                existente=CategoriaGastos.objects.get(condicion1)
+                
+                tipo_gasto_serializer=CategoriaGastosSerializers(existente,data=datasave)
+
+            else:
+                return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            tipo_gasto_serializer=CategoriaGastosSerializers(data=datasave)
+
+        if tipo_gasto_serializer.is_valid():
+            tipo_gasto_serializer.save()
+            
+            return Response(tipo_gasto_serializer.data,status= status.HTTP_200_OK)
+
+        return Response({'message':tipo_gasto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        
+        return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['POST'])
 def registrogasto(request):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
