@@ -159,6 +159,48 @@ def obtenertipoproducto(request):
     else:
         return Response({'mensaje dato vacio':'sin datos'},status= status.HTTP_200_OK)
     
+
+@api_view(['POST'])
+def registromeses(request):
+
+    data_list = []
+    data_errores=''
+    n=1
+    while n < 13:
+        if n==1: nombremes='Enero'
+        if n==2: nombremes='Febrero'
+        if n==3: nombremes='Marzo'
+        if n==4: nombremes='Abril'
+        if n==5: nombremes='Mayo'
+        if n==6: nombremes='Junio'
+        if n==7: nombremes= 'Julio'
+        if n==8: nombremes='Agosto'
+        if n==9: nombremes='Septiembre'
+        if n==10: nombremes='Octubre'
+        if n==11: nombremes='Noviembre'
+        if n==12: nombremes='Diciembre'
+
+        datasave={
+            "id":  0,
+            "numero_mes": n,
+            "nombre_mes":nombremes,
+            "fecha_registro": datetime.now()
+            
+        }
+        data_list.append(datasave)
+        
+        meses_serializer=MesesSerializers(data=datasave)
+
+        if meses_serializer.is_valid():
+            meses_serializer.save()
+
+        n=n+1
+                
+        
+        
+            
+            
+    return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
     
 ####################################################################################################################################
 @api_view(['POST'])
