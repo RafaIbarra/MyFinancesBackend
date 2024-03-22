@@ -1,7 +1,6 @@
 from django.urls import path
 from Conexion.Apis.Operaciones.api_registros_basicos import *
 from Conexion.Apis.Operaciones.api_registros_movimientos import *
-from Conexion.Apis.Listados.api_listados import *
 from Conexion.Apis.Estadisticas.api_estadisticas import *
 urlpatterns = [
 

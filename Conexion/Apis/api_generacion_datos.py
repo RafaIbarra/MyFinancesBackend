@@ -85,9 +85,6 @@ def registros_egresos(user,anno,mes):
     else:
         []
 
-
-
-
 def datos_ingresos(user,anno,mes):
     lista = registros_ingresos(user,anno,mes)
     if lista:
@@ -260,3 +257,8 @@ def datos_resumen(user,anno,mes):
         } 
     else:
         return []
+    
+
+
+
+
