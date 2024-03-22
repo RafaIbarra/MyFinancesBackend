@@ -40,12 +40,12 @@ def registrotipogasto(request):
     }
     data_list.append(datasave)
     
-    if len(datasave['nombre']) < 1:
+    if len(datasave['nombre_tipo_gasto']) < 1:
         mensaje='Ingrese el nombre para el concepto del gasto'
         data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
     if len(data_errores)==0:
-        if id>0:
+        if int(id)>0:
             condicion1 = Q(id__exact=id)
             dato_existente=TiposGastos.objects.filter(condicion1 )
             if dato_existente:
