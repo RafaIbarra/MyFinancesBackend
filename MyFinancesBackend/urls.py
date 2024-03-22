@@ -28,7 +28,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 # from ..Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
-from .Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
+from Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
 
 urlpatterns = [
     path('admin/', admin.site.urls),
