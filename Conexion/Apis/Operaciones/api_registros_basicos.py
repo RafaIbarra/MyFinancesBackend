@@ -10,7 +10,8 @@ from Conexion.Serializadores.MesesSerializers import *
 from Conexion.Serializadores.CategoriasGastosSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
 from Conexion.Serializadores.SolicitudPasswordSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword
+from Conexion.Serializadores.TiposGastosSerializers import *
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.api_generacion_datos import *
@@ -46,18 +47,18 @@ def registrotipogasto(request):
     if len(data_errores)==0:
         if id>0:
             condicion1 = Q(id__exact=id)
-            dato_existente=CategoriaGastos.objects.filter(condicion1 )
+            dato_existente=TiposGastos.objects.filter(condicion1 )
             if dato_existente:
                 
-                existente=CategoriaGastos.objects.get(condicion1)
+                existente=TiposGastos.objects.get(condicion1)
                 
-                tipo_gasto_serializer=CategoriaGastosSerializers(existente,data=datasave)
+                tipo_gasto_serializer=TiposGastosSerializers(existente,data=datasave)
 
             else:
                 return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
         
         else:
-            tipo_gasto_serializer=CategoriaGastosSerializers(data=datasave)
+            tipo_gasto_serializer=TiposGastosSerializers(data=datasave)
 
         if tipo_gasto_serializer.is_valid():
             tipo_gasto_serializer.save()
