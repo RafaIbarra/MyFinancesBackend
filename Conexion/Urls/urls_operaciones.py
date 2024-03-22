@@ -1,10 +1,12 @@
 from django.urls import path
 from Conexion.Apis.Operaciones.api_registros_basicos import *
 from Conexion.Apis.Operaciones.api_registros_movimientos import *
+from Conexion.Apis.Listados.api_listados import *
+from Conexion.Apis.Estadisticas.api_estadisticas import *
 urlpatterns = [
 
 
-
+    ################################Operaciones##################################################
     path('RegistroGasto/',registrogasto,name='registrogasto'),
     path('EliminarGastos/',eliminargastos,name='eliminargastos'),
 
@@ -28,6 +30,25 @@ urlpatterns = [
     path('EnvioCorreoPassword/',enviocorreocontraseña,name='enviocorreocontraseña'),
     path('ComprobarCodigo/',comprobarcodigo,name='comprobarcodigo'),
     path('ActualizarPassword/',actualizarpassword,name='actualizarpassword'),
+
+
+    ################################Listados##################################################
+
+    path('Meses/',meses,name='meses'),
+    path('MisGastos/',misgastos,name='misgastos'),
+    path('MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
+
+    path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
+    path('MisCategorias/',miscategorias,name='miscategorias'),
+
+    path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
+    path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),
+
+    path('MisProductosFinancieros/',misproductosfinancieros,name='misproductosfinancieros'),
+    path('MisIngresos/<int:anno>/<int:mes>/',misingresos,name='misingresos'),
+
+    path('Balance/<int:anno>/<int:mes>/',balance,name='balance'),
+    path('Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
     
 
 ]
