@@ -190,17 +190,19 @@ def registromeses(request):
         data_list.append(datasave)
         
         meses_serializer=MesesSerializers(data=datasave)
-
+        n=n+1
         if meses_serializer.is_valid():
             meses_serializer.save()
+        else:
+            return Response({'error':meses_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
 
-        n=n+1
+        
                 
         
         
             
             
-    return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+    
     
 ####################################################################################################################################
 @api_view(['POST'])
