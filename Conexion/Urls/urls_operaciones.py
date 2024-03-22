@@ -51,6 +51,7 @@ urlpatterns = [
 
     ################################Datos Iniciales##################################################
     path('RegistroTipoGasto/',registrotipogasto,name='registrotipogasto'),
+    path('ObtenerTipoGasto/',obtenertipogasto,name='obtenertipogasto'),
     
 
 ]

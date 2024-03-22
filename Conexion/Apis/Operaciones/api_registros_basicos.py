@@ -70,6 +70,29 @@ def registrotipogasto(request):
         
         return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
     
+@api_view(['POST'])
+def obtenertipogasto(request):
+
+    
+    condicion1 = Q(id__gt=0)
+        
+    lista_categorias = TiposGastos.objects.filter(condicion1)
+    
+    if lista_categorias:
+        
+        result_categoria_serializer=TiposGastosSerializers(lista_categorias,many=True)
+
+        if result_categoria_serializer.data:
+                return Response(result_categoria_serializer.data,
+                            status= status.HTTP_200_OK)
+        else:
+
+            return Response({'message':result_categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            
+    else:
+        return Response({'message':'sin datos'},status= status.HTTP_200_OK)
+    
+    
 
 @api_view(['POST'])
 def registrogasto(request):
