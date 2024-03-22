@@ -28,18 +28,18 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 # from ..Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
-from Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
+# from Conexion.Apis.Listados.api_listados import resumen,balance,meses,misgastos,misegresos
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/',Login.as_view(),name="Login"),
     path('api/Registro/',Registro.as_view(),name="Registro"), 
     # path('api/',include("Conexion.Urls.urls_listados")), 
-    path('api/Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
-    path('api/Balance/<int:anno>/<int:mes>/',balance,name='balance'),
-    path('api/Meses/',meses,name='meses'),
-    path('api/MisGastos/',misgastos,name='misgastos'),
-    path('api/MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
+    # path('api/Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
+    # path('api/Balance/<int:anno>/<int:mes>/',balance,name='balance'),
+    # path('api/Meses/',meses,name='meses'),
+    # path('api/MisGastos/',misgastos,name='misgastos'),
+    # path('api/MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
 
     path('api/',include("Conexion.Urls.urls_operaciones")), 
     
