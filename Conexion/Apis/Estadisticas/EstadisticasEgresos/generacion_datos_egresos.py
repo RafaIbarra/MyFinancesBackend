@@ -184,18 +184,18 @@ def estadistica_egresos_quince_dias(id_user,anno,mes):
             
 
             result_distribucion=distribucion_mayores.reset_index()
-            
-            nueva_fila={'NombreGasto':'Otros ' + str(distribucion_menores_agrupado['CantidadMenores'].iloc[0])+' conceptos',
-                        'CategoriaGasto':distribucion_menores_agrupado['CategoriaGasto'].iloc[0],
-                        'monto_gasto':distribucion_menores_agrupado['MontoMenores'].iloc[0],
-                        'MontoTotal':monto_total_distribucion,
-                        'Porcentaje':round(distribucion_menores_agrupado['MontoMenores'].iloc[0] / monto_total_distribucion *100,2)
-                        }
+            if distribucion_menores_agrupado.empty != True:
+                nueva_fila={'NombreGasto':'Otros ' + str(distribucion_menores_agrupado['CantidadMenores'].iloc[0])+' conceptos',
+                            'CategoriaGasto':distribucion_menores_agrupado['CategoriaGasto'].iloc[0],
+                            'monto_gasto':distribucion_menores_agrupado['MontoMenores'].iloc[0],
+                            'MontoTotal':monto_total_distribucion,
+                            'Porcentaje':round(distribucion_menores_agrupado['MontoMenores'].iloc[0] / monto_total_distribucion *100,2)
+                            }
             
             
         
-            result_distribucion.loc[len(result_distribucion)] = nueva_fila
-            result_distribucion=result_distribucion.reset_index()
+                result_distribucion.loc[len(result_distribucion)] = nueva_fila
+                result_distribucion=result_distribucion.reset_index()
             
             result_mayor_categoria=[
                 {
