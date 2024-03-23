@@ -219,5 +219,5 @@ EMAIL_HOST='smtp.gmail.com'
 EMAIL_PORT = 587 
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'myfinancesweb@gmail.com'
-EMAIL_HOST_PASSWORD = 'pmcb mwvu ydui rhdy'
+EMAIL_HOST_USER = hostmail
+EMAIL_HOST_PASSWORD = passmail

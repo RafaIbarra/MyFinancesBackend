@@ -20,7 +20,11 @@ def estadistica_grafico_linas(data,titulo,promedio_periodo):
     
     periodos=data['NombreMesEgreso'].to_list()
     montos=data['SumaMonto'].to_list()
-    tamañoperiodos=len(periodos)
+    if len(periodos)<10:
+        tamañoperiodos=10
+    else:
+        tamañoperiodos=len(periodos)
+
     fig, ax = plt.subplots(figsize=(tamañoperiodos, 4.5))
 
     ax.plot(periodos, montos, color = 'tab:purple', marker = 'o')
@@ -47,6 +51,7 @@ def estadistica_grafico_linas(data,titulo,promedio_periodo):
     imagen_grafico_lineas_bytes = buffer.getvalue()
     imagen_grafico_lineas_b64 = base64.b64encode(imagen_grafico_lineas_bytes).decode('utf-8') 
     plt.close('all')
+    
     return imagen_grafico_lineas_b64
     
 def estadistica_grafico_15_dias(data,datadistribucion):
