@@ -32,6 +32,7 @@ from drf_yasg import openapi
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/',Login.as_view(),name="Login"),
+    path('api/ComprobarConexion/',ComprobarConexion.as_view(),name="ComprobarConexion"),
     path('api/Registro/',Registro.as_view(),name="Registro"), 
     # path('api/',include("Conexion.Urls.urls_listados")), 
     path('api/',include("Conexion.Urls.urls_operaciones")), 

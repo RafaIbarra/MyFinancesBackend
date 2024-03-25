@@ -28,7 +28,8 @@ from Conexion.Serializadores.CustomsSerializers import *
 from Conexion.Serializadores.SesionesActivasSerializers import *
 from Conexion.Serializadores.UsuariosSerializers import *
 from Conexion.Serializadores.CategoriasGastosSerializers import *
-from Conexion.models import Usuarios,SesionesActivas
+from Conexion.Serializadores.MesesSerializers import *
+from Conexion.models import Usuarios,SesionesActivas,Meses
 from MyFinancesBackend.settings import TIEMPO_SESION_HORAS
 from Conexion.Seguridad.validaciones import resgistrosesion
 import re
@@ -37,7 +38,6 @@ import re
 class Login(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
-
     def post(self, request, *args, **kwargs):
         user_name = request.data.get('username', '')
         
@@ -236,6 +236,25 @@ class NotFoundView(APIView):
 
     def post(self, request, *args, **kwargs):
         return Response({"message": "La ruta solicitada no se encuentra"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+
+class ComprobarConexion(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    
+    def get(self, request, *args, **kwargs):
+        lista = Meses.objects.order_by('numero_mes')
+        
+        if lista:
+            result_serializer=MesesSerializers(lista,many=True)
+
+            if result_serializer.data:
+                return Response({'conexion':'OK'},status= status.HTTP_200_OK)
+            
+                
+        else:
+            return Response({'conexion':'NO'},status= status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 
