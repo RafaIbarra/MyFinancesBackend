@@ -229,12 +229,14 @@ def datos_saldos_periodos(user,anno):
         return[]
     
 def datos_resumen(user,anno,mes):
-    saldosperiodo=datos_saldos_periodos(user,anno)
+    
+    
     egresos=datos_egresos(user,anno,mes)
     ingresos=datos_ingresos(user,anno,mes)
     balance=datos_balance(user,anno,mes)
 
-
+    saldosperiodo=datos_saldos_periodos(user,anno)
+    
     resumen_data={
                     'Resumen':balance,
                     'Ingresos':ingresos,
@@ -243,20 +245,37 @@ def datos_resumen(user,anno,mes):
                 }
     r_final = ResumenSerializers(resumen_data)
     if r_final.data:
-        imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
-        imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
-        imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
+        # imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
+        # imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
+        # imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
         return{
             'datos':r_final.data,
-            'graficos':{
-                'imgResumen':imagen_resumen,
-                'imgEgresos':imagen_egresos,
-                'imgIngresos':imagen_ingresos,
-            }
+            # 'graficos':{
+            #     'imgResumen':imagen_resumen,
+            #     'imgEgresos':imagen_egresos,
+            #     'imgIngresos':imagen_ingresos,
+            # }
 
         } 
     else:
         return []
+    
+def imagenes_mes(user,anno,mes):
+    
+    egresos=datos_egresos(user,anno,mes)
+    ingresos=datos_ingresos(user,anno,mes)
+    
+    imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
+    imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
+    imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
+    data_imagenes=[]
+    data_imagenes.append({'imgResumen':imagen_resumen,
+                          'imgEgresos':imagen_egresos,
+                          'imgIngresos':imagen_ingresos,
+                          })
+    return data_imagenes
+
+    
     
 
 

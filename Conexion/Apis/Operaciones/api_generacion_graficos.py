@@ -23,8 +23,12 @@ from Conexion.Serializadores.BalanceSerializers import *
 
 
 def generar_graf_torta_resumen(ingresos,egresos):
-    data_egresos = egresos
+ 
+    data_egresos=egresos
+
+  
     data_ingresos=ingresos
+
     if data_ingresos and data_egresos:
         
 

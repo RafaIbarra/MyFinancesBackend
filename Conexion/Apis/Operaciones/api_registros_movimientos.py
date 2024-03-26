@@ -13,7 +13,7 @@ import time
 from django.utils import timezone
 import ast
 from datetime import datetime
-from Conexion.Apis.api_generacion_datos import datos_resumen
+from Conexion.Apis.api_generacion_datos import datos_resumen,imagenes_mes
 @api_view(['POST'])
 def registroegreso(request):
 
@@ -205,7 +205,6 @@ def registroingreso(request):
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
-
 @api_view(['POST'])
 def eliminaringreso(request):
 
@@ -241,6 +240,23 @@ def eliminaringreso(request):
             return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
     else:
          return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
+def estadisticas_mes(request,anno,mes):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        datos_imagenes=imagenes_mes(id_user,anno,mes)
+        if datos_imagenes:
+            return Response(datos_imagenes,status= status.HTTP_200_OK)
+        
+        else:
+            return Response({[]},status= status.HTTP_200_OK)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
 def validaciones_registros(valor,tipo):

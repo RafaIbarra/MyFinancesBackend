@@ -49,6 +49,8 @@ urlpatterns = [
     path('Balance/<int:anno>/<int:mes>/',balance,name='balance'),
     path('Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
 
+    path('EstadisticasMes/<int:anno>/<int:mes>/',estadisticas_mes,name='imagenes_mes'),
+
     ################################Datos Iniciales##################################################
     path('RegistroTipoGasto/',registrotipogasto,name='registrotipogasto'),
     path('ObtenerTipoGasto/',obtenertipogasto,name='obtenertipogasto'),
