@@ -2,6 +2,7 @@ from django.urls import path
 from Conexion.Apis.Operaciones.api_registros_basicos import *
 from Conexion.Apis.Operaciones.api_registros_movimientos import *
 from Conexion.Apis.Estadisticas.api_estadisticas import *
+from Conexion.Apis.SeguimientoApp.seguimiento_app import *
 urlpatterns = [
 
 
@@ -56,6 +57,14 @@ urlpatterns = [
     path('ObtenerTipoGasto/',obtenertipogasto,name='obtenertipogasto'),
     path('RegistroTipoProduto/',registrotipoproduto,name='registrotipoproduto'),
     path('ObtenerTipoProducto/',obtenertipoproducto,name='obtenertipoproducto'),
-    path('RegistroMeses/',registromeses,name='registromeses')
+    path('RegistroMeses/',registromeses,name='registromeses'),
+
+
+    ################################Seguimiento##################################################
+    path('SeguimientoUsuarios/',seguimiento_usuarios,name='seguimiento_usuarios'),
+    path('SeguimientoSesiones/',seguimiento_sesiones,name='seguimiento_sesiones'),
+
+
+    
 
 ]
