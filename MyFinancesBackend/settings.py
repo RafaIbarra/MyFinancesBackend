@@ -32,6 +32,8 @@ DEBUG = 'RENDER' not in os.environ
 if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
     ALLOWED_HOSTS = [allow_host]
+else:
+   ALLOWED_HOSTS = [] 
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
