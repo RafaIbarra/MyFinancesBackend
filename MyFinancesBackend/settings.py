@@ -29,8 +29,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY',default='clave secreta')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 DEBUG = 'RENDER' not in os.environ
+if DEBUG:
+    allow_host = configuracion.LOCAL_ALLOW_HOST
+    ALLOWED_HOSTS = [allow_host]
 
-ALLOWED_HOSTS = []
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -104,10 +106,11 @@ WSGI_APPLICATION = 'MyFinancesBackend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-pass_db = configuracion.PASS
-user_db = configuracion.USER
-name_db = configuracion.NAME
+
 if DEBUG:
+    pass_db = configuracion.PASS
+    user_db = configuracion.USER
+    name_db = configuracion.NAME
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -198,6 +201,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     'http://localhost:3000',
     'http://localhost:5173',
+    'exp://192.168.1.103:8081',
+    'http://localhost:8081',
     'https://my-finances-web-btxv.vercel.app',
     
     

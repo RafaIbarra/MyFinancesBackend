@@ -955,4 +955,48 @@ def meses(request):
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
+####################################### Listados Movile ##################################
+@api_view(['POST'])
+def MovileMisIngresos(request,anno,mes):
 
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_ingresos=datos_ingresos(id_user,anno,mes)
+        if lista_ingresos:
+          
+            def custom_key(item):
+                fecha_ingreso = item.get('fecha_ingreso', '')
+                fecha_registro = item.get('fecha_registro', '')
+                return (fecha_ingreso, fecha_registro)
+             
+            lista_ingresos = sorted(lista_ingresos, key=custom_key, reverse=False)
+            agrupados=agrupar_periodos_ingresos(lista_ingresos)
+            lista_meses = Meses.objects.order_by('numero_mes')
+            result_meses_serializer=MesesSerializers(lista_meses,many=True)
+            if result_meses_serializer.data:
+             
+                return Response(lista_ingresos,status= status.HTTP_200_OK)      
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def MovileMisEgresos(request,anno,mes):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_egresos=datos_egresos(id_user,anno,mes)
+        if lista_egresos:
+
+            lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
+            agrupados=agrupar_periodos_egresos(lista_egresos)
+            lista_meses = Meses.objects.order_by('numero_mes')
+            result_meses_serializer=MesesSerializers(lista_meses,many=True)
+            if result_meses_serializer.data:
+                
+            
+                return Response(lista_egresos,status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
