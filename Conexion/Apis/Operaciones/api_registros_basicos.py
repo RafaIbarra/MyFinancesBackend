@@ -989,7 +989,7 @@ def MovileMisEgresos(request,anno,mes):
         lista_egresos=datos_egresos(id_user,anno,mes)
         if lista_egresos:
 
-            lista_egresos=sorted(lista_egresos, key=lambda x: x['fecha_registro'], reverse=False)
+            lista_egresos=sorted(lista_egresos, key=lambda x: x['id'], reverse=False)
             agrupados=agrupar_periodos_egresos(lista_egresos)
             lista_meses = Meses.objects.order_by('numero_mes')
             result_meses_serializer=MesesSerializers(lista_meses,many=True)
