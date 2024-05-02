@@ -13,7 +13,7 @@ import time
 from django.utils import timezone
 import ast
 from datetime import datetime
-from Conexion.Apis.api_generacion_datos import datos_resumen,imagenes_mes
+from Conexion.Apis.api_generacion_datos import datos_resumen,imagenes_mes,datos_egresos
 @api_view(['POST'])
 def registroegreso(request):
 
@@ -291,6 +291,8 @@ def validaciones_registros(valor,tipo):
             return False
         else:
             return True
+        
+
 
 
 

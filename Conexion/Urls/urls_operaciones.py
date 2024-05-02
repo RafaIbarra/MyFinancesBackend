@@ -56,6 +56,9 @@ urlpatterns = [
 
     path('MovileMisIngresos/<int:anno>/<int:mes>/',MovileMisIngresos,name='MovileMisIngresos'),
     path('MovileMisEgresos/<int:anno>/<int:mes>/',MovileMisEgresos,name='MovileMisEgresos'),
+    path('MovileDatoEgreso/<int:anno>/<int:mes>/<int:id>/',MovileDatoEgreso,name='MovileDatoEgreso'),
+
+    
 
     ################################Datos Iniciales##################################################
     path('RegistroTipoGasto/',registrotipogasto,name='registrotipogasto'),

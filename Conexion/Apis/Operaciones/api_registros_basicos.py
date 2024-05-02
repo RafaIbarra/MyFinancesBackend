@@ -1000,3 +1000,21 @@ def MovileMisEgresos(request,anno,mes):
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def MovileDatoEgreso(request,anno,mes,id):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_egresos=datos_egresos(id_user,anno,mes)
+        # lista_egresos_unico = [elemento for elemento in lista_egresos if elemento.get('id') == id]
+        
+        if lista_egresos:
+
+            lista_egresos_unico = [elemento for elemento in lista_egresos if elemento.get('id') == id]
+            valor_retorno=lista_egresos_unico[0]
+        
+            return Response(valor_retorno,status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
