@@ -1018,3 +1018,16 @@ def MovileDatoEgreso(request,anno,mes,id):
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+
+
+@api_view(['POST'])
+def comprobarsesionusuario(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:           
+        return Response({'message':'OK'},status= status.HTTP_200_OK)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
