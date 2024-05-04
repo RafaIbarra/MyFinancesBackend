@@ -67,6 +67,7 @@ urlpatterns = [
     path('RegistroTipoProduto/',registrotipoproduto,name='registrotipoproduto'),
     path('ObtenerTipoProducto/',obtenertipoproducto,name='obtenertipoproducto'),
     path('RegistroMeses/',registromeses,name='registromeses'),
+    path('MovileResumenMes/<int:anno>/<int:mes>/',MovileResumenMes,name='MovileResumenMes'),
 
 
     ################################Seguimiento##################################################

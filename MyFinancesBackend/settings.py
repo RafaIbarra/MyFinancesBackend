@@ -31,9 +31,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY',default='clave secreta')
 DEBUG = 'RENDER' not in os.environ
 if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
+    
     ALLOWED_HOSTS = [allow_host]
+
 else:
    ALLOWED_HOSTS = [] 
+
+
+# ALLOWED_HOSTS = ["*"]
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -193,12 +198,14 @@ CORS_ALLOW_HEADERS = [
     'Sesion',  
     'user',
     'signal',
+    'Access-Control-Allow-Origin'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "https://sub.example.com",
     "http://localhost:8080",
+    "http://10.10.0.204:8000",
     "http://127.0.0.1:3000",
     "http://localhost:3000",
     'http://localhost:3000',
@@ -206,10 +213,14 @@ CORS_ALLOWED_ORIGINS = [
     'exp://192.168.1.103:8081',
     'http://localhost:8081',
     'https://my-finances-web-btxv.vercel.app',
-    
-    
-    
-    
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_WHITELIST = [
+"http://10.10.0.204:8000",
+'http://127.0.0.1:3000'
+'http://localhost:5173',
+'http://127.0.0.1:5173',
 ]
 
 SIMPLE_JWT = {

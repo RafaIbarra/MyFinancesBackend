@@ -1031,3 +1031,26 @@ def comprobarsesionusuario(request):
         return Response({'message':'OK'},status= status.HTTP_200_OK)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+
+
+@api_view(['POST'])
+def MovileResumenMes(request,anno,mes):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        data_resumen=datos_resumen_movile(id_user,anno,mes)
+        if data_resumen:
+
+            # lista_egresos=sorted(lista_egresos, key=lambda x: x['id'], reverse=False)
+            # agrupados=agrupar_periodos_egresos(lista_egresos)
+            # lista_meses = Meses.objects.order_by('numero_mes')
+            # result_meses_serializer=MesesSerializers(lista_meses,many=True)
+            # if result_meses_serializer.data:
+                
+            
+            return Response(data_resumen,status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
