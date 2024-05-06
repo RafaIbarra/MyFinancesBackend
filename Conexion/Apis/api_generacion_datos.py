@@ -178,7 +178,7 @@ def datos_balance(user,anno,mes):
             
             
 
-        return[]
+        
     else:
         return[]
     
@@ -277,24 +277,17 @@ def imagenes_mes(user,anno,mes):
 
 
 def datos_resumen_movile(user,anno,mes):
-    
-    
-    
-    balance=datos_balance(user,anno,mes)
 
+    balance=datos_balance(user,anno,mes)
+    registros_con_codigo_menor_a_3 = [registro for registro in balance if registro['Codigo'] < 3]
+    
     if balance:
         # imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
         # imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
         # imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
-        return{
-            'datos':balance,
-            # 'graficos':{
-            #     'imgResumen':imagen_resumen,
-            #     'imgEgresos':imagen_egresos,
-            #     'imgIngresos':imagen_ingresos,
-            # }
-
-        } 
+        return registros_con_codigo_menor_a_3
+            
+        
     else:
         return []
     

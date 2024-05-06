@@ -57,6 +57,8 @@ urlpatterns = [
     path('MovileMisIngresos/<int:anno>/<int:mes>/',MovileMisIngresos,name='MovileMisIngresos'),
     path('MovileMisEgresos/<int:anno>/<int:mes>/',MovileMisEgresos,name='MovileMisEgresos'),
     path('MovileDatoEgreso/<int:anno>/<int:mes>/<int:id>/',MovileDatoEgreso,name='MovileDatoEgreso'),
+    path('MovileResumenMes/<int:anno>/<int:mes>/',MovileResumenMes,name='MovileResumenMes'),
+    path('MovileSaldos/<int:anno>/',MovileSaldos,name='MovileSaldos'),
     path('ComprobarSesionUsuario/',comprobarsesionusuario,name='comprobarsesionusuario'),
 
     
@@ -67,7 +69,7 @@ urlpatterns = [
     path('RegistroTipoProduto/',registrotipoproduto,name='registrotipoproduto'),
     path('ObtenerTipoProducto/',obtenertipoproducto,name='obtenertipoproducto'),
     path('RegistroMeses/',registromeses,name='registromeses'),
-    path('MovileResumenMes/<int:anno>/<int:mes>/',MovileResumenMes,name='MovileResumenMes'),
+    
 
 
     ################################Seguimiento##################################################

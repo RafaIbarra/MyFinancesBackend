@@ -1054,3 +1054,23 @@ def MovileResumenMes(request,anno,mes):
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def MovileSaldos(request,anno):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        data_saldos=datos_saldos_periodos(id_user,anno)
+        if data_saldos:
+
+            # lista_egresos=sorted(lista_egresos, key=lambda x: x['id'], reverse=False)
+            # agrupados=agrupar_periodos_egresos(lista_egresos)
+            # lista_meses = Meses.objects.order_by('numero_mes')
+            # result_meses_serializer=MesesSerializers(lista_meses,many=True)
+            # if result_meses_serializer.data:
+                
+            
+            return Response(data_saldos,status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
