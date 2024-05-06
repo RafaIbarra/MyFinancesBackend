@@ -291,6 +291,18 @@ def datos_resumen_movile(user,anno,mes):
     else:
         return []
     
+
+def movile_imagenes_mes_saldo(user,anno,mes):
+    
+    egresos=datos_egresos(user,anno,mes)
+    ingresos=datos_ingresos(user,anno,mes)
+    
+    imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
+    
+    data_imagenes=[]
+    data_imagenes.append({'imgResumen':imagen_resumen})
+    return data_imagenes
+
     
 
 

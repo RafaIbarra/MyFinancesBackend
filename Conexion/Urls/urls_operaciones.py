@@ -59,6 +59,7 @@ urlpatterns = [
     path('MovileDatoEgreso/<int:anno>/<int:mes>/<int:id>/',MovileDatoEgreso,name='MovileDatoEgreso'),
     path('MovileResumenMes/<int:anno>/<int:mes>/',MovileResumenMes,name='MovileResumenMes'),
     path('MovileSaldos/<int:anno>/',MovileSaldos,name='MovileSaldos'),
+    path('MovileEstadisticaMesSaldo/<int:anno>/<int:mes>/',estadisticas_mes_saldo,name='estadisticas_mes_saldo'),
     path('ComprobarSesionUsuario/',comprobarsesionusuario,name='comprobarsesionusuario'),
 
     
