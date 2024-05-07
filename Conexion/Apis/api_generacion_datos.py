@@ -303,6 +303,27 @@ def movile_imagenes_mes_saldo(user,anno,mes):
     data_imagenes.append({'imgResumen':imagen_resumen})
     return data_imagenes
 
+
+def movile_imagenes_mes_ingreso(user,anno,mes):
+    
+    
+    imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
+    data_imagenes=[]
+    data_imagenes.append({
+                          'imgIngresos':imagen_ingresos,
+                          })
+    return data_imagenes
+
+def movile_imagenes_mes_egreso(user,anno,mes):
+    
+   
+    imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
+    data_imagenes=[]
+    data_imagenes.append({
+                          'imgEgresos':imagen_egresos,
+                          })
+    return data_imagenes
+
     
 
 

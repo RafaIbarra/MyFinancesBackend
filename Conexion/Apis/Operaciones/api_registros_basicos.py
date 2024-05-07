@@ -965,18 +965,35 @@ def MovileMisIngresos(request,anno,mes):
         lista_ingresos=datos_ingresos(id_user,anno,mes)
         if lista_ingresos:
           
-            def custom_key(item):
-                fecha_ingreso = item.get('fecha_ingreso', '')
-                fecha_registro = item.get('fecha_registro', '')
-                return (fecha_ingreso, fecha_registro)
+            # def custom_key(item):
+            #     fecha_ingreso = item.get('fecha_ingreso', '')
+            #     fecha_registro = item.get('fecha_registro', '')
+            #     return (fecha_ingreso, fecha_registro)
              
-            lista_ingresos = sorted(lista_ingresos, key=custom_key, reverse=False)
-            agrupados=agrupar_periodos_ingresos(lista_ingresos)
+            lista_ingresos = sorted(lista_ingresos,key=lambda x: x['id'], reverse=False)
+            # agrupados=agrupar_periodos_ingresos(lista_ingresos)
             lista_meses = Meses.objects.order_by('numero_mes')
             result_meses_serializer=MesesSerializers(lista_meses,many=True)
             if result_meses_serializer.data:
              
                 return Response(lista_ingresos,status= status.HTTP_200_OK)      
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def MovileDatoIngreso(request,anno,mes,id):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_ingresos=datos_ingresos(id_user,anno,mes)
+        if lista_ingresos:
+          
+            lista_egresos_unico = [elemento for elemento in lista_ingresos if elemento.get('id') == id]
+            valor_retorno=lista_egresos_unico[0]
+        
+            return Response(valor_retorno,status= status.HTTP_200_OK)   
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)

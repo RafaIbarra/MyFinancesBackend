@@ -55,11 +55,18 @@ urlpatterns = [
     ################################Listados Movile ##################################################
 
     path('MovileMisIngresos/<int:anno>/<int:mes>/',MovileMisIngresos,name='MovileMisIngresos'),
+    path('MovileDatoIngreso/<int:anno>/<int:mes>/<int:id>/',MovileDatoIngreso,name='MovileDatoIngreso'),
+
+
     path('MovileMisEgresos/<int:anno>/<int:mes>/',MovileMisEgresos,name='MovileMisEgresos'),
     path('MovileDatoEgreso/<int:anno>/<int:mes>/<int:id>/',MovileDatoEgreso,name='MovileDatoEgreso'),
+
+
     path('MovileResumenMes/<int:anno>/<int:mes>/',MovileResumenMes,name='MovileResumenMes'),
     path('MovileSaldos/<int:anno>/',MovileSaldos,name='MovileSaldos'),
     path('MovileEstadisticaMesSaldo/<int:anno>/<int:mes>/',estadisticas_mes_saldo,name='estadisticas_mes_saldo'),
+    path('MovileEstadisticaMesIngreso/<int:anno>/<int:mes>/',estadisticas_mes_ingreso,name='estadisticas_mes_ingreso'),
+    path('MovileEstadisticaMesEgreso/<int:anno>/<int:mes>/',estadisticas_mes_egreso,name='estadisticas_mes_egreso'),
     path('ComprobarSesionUsuario/',comprobarsesionusuario,name='comprobarsesionusuario'),
 
     
