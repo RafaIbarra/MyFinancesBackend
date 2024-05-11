@@ -878,12 +878,16 @@ def misgastos(request):
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 @api_view(['POST'])
-def misproductosfinancieros(request):
+def misproductosfinancieros(request,id):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:           
         condicion1 = Q(user_id__exact=id_user)
-        lista=ProductosFinancieros.objects.filter(condicion1)
+        if id > 0:
+            condicion2 = Q(id__exact=id)
+            lista=ProductosFinancieros.objects.filter(condicion1 & condicion2)
+        else:
+            lista=ProductosFinancieros.objects.filter(condicion1)
                 
         if lista:
             result_serializer=ProductosFinancierosSerializers(lista,many=True)
@@ -1078,16 +1082,12 @@ def MovileSaldos(request,anno):
     resp=validacionpeticion(token_sesion)
     if resp==True:
         data_saldos=datos_saldos_periodos(id_user,anno)
-        if data_saldos:
-
-            # lista_egresos=sorted(lista_egresos, key=lambda x: x['id'], reverse=False)
-            # agrupados=agrupar_periodos_egresos(lista_egresos)
-            # lista_meses = Meses.objects.order_by('numero_mes')
-            # result_meses_serializer=MesesSerializers(lista_meses,many=True)
-            # if result_meses_serializer.data:
-                
-            
+        if data_saldos:            
             return Response(data_saldos,status= status.HTTP_200_OK)
         
     else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+
+    
