@@ -35,11 +35,11 @@ urlpatterns = [
     ################################Listados##################################################
 
     path('Meses/',meses,name='meses'),
-    path('MisGastos/',misgastos,name='misgastos'),
+    path('MisGastos/<int:id>/',misgastos,name='misgastos'),
     path('MisEgresos/<int:anno>/<int:mes>/',misegresos,name='misegresos'),
 
     path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
-    path('MisCategorias/',miscategorias,name='miscategorias'),
+    path('MisCategorias/<int:id>/',miscategorias,name='miscategorias'),
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
     path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),

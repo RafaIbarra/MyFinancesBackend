@@ -494,12 +494,12 @@ def eliminarcategorias(request):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
-        gatosdel=request.data['categorias']
-        if type(gatosdel)==str:
-            gatosdel=ast.literal_eval(gatosdel)
+        categoriadel=request.data['categorias']
+        if type(categoriadel)==str:
+            categoriadel=ast.literal_eval(categoriadel)
 
-        if len(gatosdel):
-            for item in gatosdel:
+        if len(categoriadel):
+            for item in categoriadel:
                 condicion1 = Q(id__exact=item)
                 lista=CategoriaGastos.objects.filter(condicion1).values()
 
@@ -785,14 +785,18 @@ def misegresos(request,anno,mes):
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 @api_view(['POST'])
-def miscategorias(request):
+def miscategorias(request,id):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
         condicion1 = Q(user_id__exact=id_user)
-        
-        lista_categorias = CategoriaGastos.objects.filter(condicion1).order_by('nombre_categoria')
+        if id >0:
+            condicion2 = Q(id__exact=id)
+            lista_categorias = CategoriaGastos.objects.filter(condicion1 & condicion2).order_by('nombre_categoria')
+        else:
+
+            lista_categorias = CategoriaGastos.objects.filter(condicion1).order_by('nombre_categoria')
         
         if lista_categorias:
             
@@ -856,13 +860,19 @@ def  misdatosregistroegreso (request):
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 @api_view(['POST'])
-def misgastos(request):
+def misgastos(request,id):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:           
         condicion1 = Q(user_id__exact=id_user)
+
+        if id >0:
+            condicion2 = Q(id__exact=id)
+            lista = Gastos.objects.filter(condicion1 & condicion2).order_by('categoria', 'nombre_gasto')
+            
+        else:
    
-        lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
+            lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
         
         if lista:
             result_serializer=GastosSerializers(lista,many=True)
