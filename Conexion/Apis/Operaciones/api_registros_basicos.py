@@ -208,72 +208,75 @@ def registrogasto(request):
     if resp==True:
         data_list = []
         data_errores=''
-        id_gasto=request.data['codigogasto']
-        datasave={
-            "id":  request.data['codigogasto'],
-            "tipogasto":  request.data['tipogasto'],
-            "categoria": request.data['categoria'],
-            "user": id_user,
-            "nombre_gasto": request.data['nombre'],
-            "fecha_registro": datetime.now()
+        try:
+            id_gasto=request.data['codigogasto']
+            datasave={
+                "id":  request.data['codigogasto'],
+                "tipogasto":  request.data['tipogasto'],
+                "categoria": request.data['categoria'],
+                "user": id_user,
+                "nombre_gasto": request.data['nombre'],
+                "fecha_registro": datetime.now()
+                
+            }
+            data_list.append(datasave)
+            consultatipogasto=TiposGastos.objects.filter(id__exact=request.data['tipogasto']).values()
+            if not consultatipogasto:
+                mensaje='Selecione el tipo de gasto'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+            consultacategoria=CategoriaGastos.objects.filter(id__exact=request.data['categoria']).values()
+            if not consultacategoria:
+                mensaje='Selecione La categoria'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+            if len(datasave['nombre_gasto']) < 1:
+                mensaje='Ingrese el nombre para el concepto del gasto'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+            existeregistro=False
+            condicion1 = Q(user_id__exact=id_user)
+            consulta_gastos= list(Gastos.objects.filter(condicion1).values())
             
-        }
-        data_list.append(datasave)
-        consultatipogasto=TiposGastos.objects.filter(id__exact=request.data['tipogasto']).values()
-        if not consultatipogasto:
-            mensaje='Selecione el tipo de gasto'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+            for item in consulta_gastos:
+                if item['nombre_gasto'].replace(' ','').lower()==datasave['nombre_gasto'].replace(' ','').lower() and item['id'] != id_gasto:
+                    existeregistro=True
 
+            if existeregistro:
+                mensaje='Ya se registro un concepto de gasto con este nombre'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
-        consultacategoria=CategoriaGastos.objects.filter(id__exact=request.data['categoria']).values()
-        if not consultacategoria:
-            mensaje='Selecione La categoria'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+            if len(data_errores)==0:
+                if id_gasto>0:
+                    condicion1 = Q(id__exact=id_gasto)
+                    dato_existente=Gastos.objects.filter(condicion1 )
+                    if dato_existente:
+                        
+                        existente=Gastos.objects.get(condicion1)
+                        
+                        gasto_serializer=GastosSerializers(existente,data=datasave)
 
-        if len(datasave['nombre_gasto']) < 1:
-            mensaje='Ingrese el nombre para el concepto del gasto'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
-
-
-        existeregistro=False
-        condicion1 = Q(user_id__exact=id_user)
-        consulta_gastos= list(Gastos.objects.filter(condicion1).values())
-        
-        for item in consulta_gastos:
-            if item['nombre_gasto'].replace(' ','').lower()==datasave['nombre_gasto'].replace(' ','').lower() and item['id'] != id_gasto:
-                existeregistro=True
-
-        if existeregistro:
-            mensaje='Ya se registro un concepto de gasto con este nombre'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
-
-        if len(data_errores)==0:
-            if id_gasto>0:
-                condicion1 = Q(id__exact=id_gasto)
-                dato_existente=Gastos.objects.filter(condicion1 )
-                if dato_existente:
-                    
-                    existente=Gastos.objects.get(condicion1)
-                    
-                    gasto_serializer=GastosSerializers(existente,data=datasave)
-
+                    else:
+                        return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+                
                 else:
-                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
-            
+                    gasto_serializer=GastosSerializers(data=datasave)
+
+                if gasto_serializer.is_valid():
+                    gasto_serializer.save()
+                    condicion1 = Q(user_id__exact=id_user)
+                    lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
+                    result_serializer=GastosSerializers(lista,many=True)
+                    return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+                return Response({'message':gasto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
             else:
-                gasto_serializer=GastosSerializers(data=datasave)
-
-            if gasto_serializer.is_valid():
-                gasto_serializer.save()
-                condicion1 = Q(user_id__exact=id_user)
-                lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
-                result_serializer=GastosSerializers(lista,many=True)
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':gasto_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-        else:
-            
-            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+                
+                return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+                return Response({'error': {str(e)}},status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
@@ -428,63 +431,69 @@ def registrocategoria(request):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
-        data_list = []
-        data_errores=''
-        id_categoria=request.data['codigocategoria']
-        datasave={
-            "id":  request.data['codigocategoria'],
-            "user": id_user,
-            "nombre_categoria": request.data['nombre'],
-            "fecha_registro": datetime.now()
+        try:
+            data_list = []
+            data_errores=''
+            id_categoria=request.data['codigocategoria']
             
-        }
-        data_list.append(datasave)
-        
 
-        if len(datasave['nombre_categoria']) < 1:
-            mensaje='Ingrese el nombre para el concepto de la categoria'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+                
+            datasave={
+                "id":  request.data['codigocategoria'],
+                "user": id_user,
+                "nombre_categoria": request.data['nombre'],
+                "fecha_registro": datetime.now()
+                
+            }
+            data_list.append(datasave)
+            
+
+            if len(datasave['nombre_categoria']) < 1:
+                mensaje='Ingrese el nombre para el concepto de la categoria'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
 
-        existeregistro=False
-        condicion1 = Q(user_id__exact=id_user)
-        consulta_gastos= list(CategoriaGastos.objects.filter(condicion1).values())
-        
-        for item in consulta_gastos:
-            if item['nombre_categoria'].replace(' ','').lower()==datasave['nombre_categoria'].replace(' ','').lower() and item['id'] != id_categoria:
-                existeregistro=True
+            existeregistro=False
+            condicion1 = Q(user_id__exact=id_user)
+            consulta_gastos= list(CategoriaGastos.objects.filter(condicion1).values())
+            
+            for item in consulta_gastos:
+                if item['nombre_categoria'].replace(' ','').lower()==datasave['nombre_categoria'].replace(' ','').lower() and item['id'] != id_categoria:
+                    existeregistro=True
 
-        if existeregistro:
-            mensaje='Ya se registro una categoria de gasto con este nombre'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+            if existeregistro:
+                mensaje='Ya se registro una categoria de gasto con este nombre'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
-        if len(data_errores)==0:
-            if id_categoria>0:
-                condicion1 = Q(id__exact=id_categoria)
-                dato_existente=CategoriaGastos.objects.filter(condicion1 )
-                if dato_existente:
-                    
-                    existente=CategoriaGastos.objects.get(condicion1)
-                    
-                    categoria_serializer=CategoriaGastosSerializers(existente,data=datasave)
+            if len(data_errores)==0:
+                if id_categoria>0:
+                    condicion1 = Q(id__exact=id_categoria)
+                    dato_existente=CategoriaGastos.objects.filter(condicion1 )
+                    if dato_existente:
+                        
+                        existente=CategoriaGastos.objects.get(condicion1)
+                        
+                        categoria_serializer=CategoriaGastosSerializers(existente,data=datasave)
 
+                    else:
+                        return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+                
                 else:
-                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
-            
+                    categoria_serializer=CategoriaGastosSerializers(data=datasave)
+
+                if categoria_serializer.is_valid():
+                    categoria_serializer.save()
+                    condicion1 = Q(user_id__exact=id_user)
+                    lista = CategoriaGastos.objects.filter(condicion1).order_by( 'nombre_categoria')
+                    result_serializer=CategoriaGastosSerializers(lista,many=True)
+                    return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+                return Response({'message':categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
             else:
-                categoria_serializer=CategoriaGastosSerializers(data=datasave)
-
-            if categoria_serializer.is_valid():
-                categoria_serializer.save()
-                condicion1 = Q(user_id__exact=id_user)
-                lista = CategoriaGastos.objects.filter(condicion1).order_by( 'nombre_categoria')
-                result_serializer=CategoriaGastosSerializers(lista,many=True)
-                return Response(result_serializer.data,status= status.HTTP_200_OK)
-
-            return Response({'message':categoria_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-        else:
-            
-            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+                
+                return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+                return Response({'error':  {str(e)}},status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
@@ -617,8 +626,10 @@ def enviocorreocontraseña(request):
             try:
                 email.send()
                 return Response({'mensaje': 'Correo enviado a ' + correo_user},status=status.HTTP_200_OK)
+                # return Response({'error': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
+            
             except Exception as e:
-                return Response({'mensaje': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': f'Error al enviar el correo: {str(e)}'},status=status.HTTP_400_BAD_REQUEST)
         
 
         return Response({'message':solicitud_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
@@ -990,7 +1001,10 @@ def MovileMisIngresos(request,anno,mes):
             result_meses_serializer=MesesSerializers(lista_meses,many=True)
             if result_meses_serializer.data:
              
-                return Response(lista_ingresos,status= status.HTTP_200_OK)      
+                return Response(lista_ingresos,status= status.HTTP_200_OK)
+        else:
+            
+            return Response([],status= status.HTTP_200_OK)    
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
@@ -1007,7 +1021,10 @@ def MovileDatoIngreso(request,anno,mes,id):
             lista_egresos_unico = [elemento for elemento in lista_ingresos if elemento.get('id') == id]
             valor_retorno=lista_egresos_unico[0]
         
-            return Response(valor_retorno,status= status.HTTP_200_OK)   
+            return Response(valor_retorno,status= status.HTTP_200_OK)
+        else:
+            
+            return Response([],status= status.HTTP_200_OK) 
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
@@ -1028,6 +1045,9 @@ def MovileMisEgresos(request,anno,mes):
                 
             
                 return Response(lista_egresos,status= status.HTTP_200_OK)
+        else:
+            
+            return Response([],status= status.HTTP_200_OK)
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
@@ -1037,7 +1057,9 @@ def MovileDatoEgreso(request,anno,mes,id):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
+        
         lista_egresos=datos_egresos(id_user,anno,mes)
+        
         # lista_egresos_unico = [elemento for elemento in lista_egresos if elemento.get('id') == id]
         
         if lista_egresos:
@@ -1046,6 +1068,8 @@ def MovileDatoEgreso(request,anno,mes,id):
             valor_retorno=lista_egresos_unico[0]
         
             return Response(valor_retorno,status= status.HTTP_200_OK)
+        else:
+            return Response([],status= status.HTTP_200_OK)
         
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
@@ -1094,6 +1118,8 @@ def MovileSaldos(request,anno):
         data_saldos=datos_saldos_periodos(id_user,anno)
         if data_saldos:            
             return Response(data_saldos,status= status.HTTP_200_OK)
+        else:
+            return Response([],status= status.HTTP_200_OK)
         
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)

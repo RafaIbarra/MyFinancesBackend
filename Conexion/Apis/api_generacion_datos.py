@@ -95,12 +95,16 @@ def datos_ingresos(user,anno,mes):
         return []
     
 def datos_egresos(user,anno,mes):
+    
     lista = registros_egresos(user,anno,mes)
+    
+    
     if lista:
         result_serializer=EgresosSerializers(lista,many=True)
         if result_serializer.data:
             return result_serializer.data
     else:
+        
         return []
 
 
