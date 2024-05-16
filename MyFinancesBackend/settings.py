@@ -33,6 +33,7 @@ if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
     
     ALLOWED_HOSTS = [allow_host]
+    # ALLOWED_HOSTS = ['127.0.0.1']
 
 else:
    ALLOWED_HOSTS = [] 

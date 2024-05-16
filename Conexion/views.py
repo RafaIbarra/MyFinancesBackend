@@ -65,7 +65,14 @@ class Login(TokenObtainPairView):
             user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
             
             token,created=Token.objects.get_or_create(user=user)
-        
+            # print(user)
+            consultausuarios=Usuarios.objects.filter(user_name__exact=user).values()
+            # print(consultausuarios[0]['nombre_usuario'])
+            # print(consultausuarios[0]['apellido_usuario'])
+            fechareg=str(consultausuarios[0]['fecha_registro'])
+            fecha_obj = datetime.fromisoformat(fechareg)
+            fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
+            # print(fecha_formateada)
             
             try:
         
@@ -75,6 +82,17 @@ class Login(TokenObtainPairView):
                     'token_session':token.key,
                     'dispositivo':user_agent
                 })
+
+                datauser=[{
+                    'username':consultausuarios[0]['user_name'],
+                    'nombre':consultausuarios[0]['nombre_usuario'],
+                    'apellido':consultausuarios[0]['apellido_usuario'],
+                    'fecha_registro':fecha_formateada,
+                    
+                }
+
+                ]
+            
                
                 sesion_serializers=SesionesActivasSerializers(data=datasesion)
                 if sesion_serializers.is_valid():
@@ -92,6 +110,7 @@ class Login(TokenObtainPairView):
                             'refresh': login_serializer.validated_data.get('refresh'),
                             'sesion':token.key,
                             'user_name':user_name.capitalize(),
+                            'datauser':datauser,
                             'message': 'Inicio de Sesion Existoso'
                         }, status=status.HTTP_200_OK)
                     return Response({'error': 'Contraseña o nombre de usuario incorrectos'}, status=status.HTTP_400_BAD_REQUEST)
