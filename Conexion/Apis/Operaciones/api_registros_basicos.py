@@ -1083,7 +1083,7 @@ def comprobarsesionusuario(request):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
     if resp==True:
-        print(usuario)
+        
         consultausuarios=Usuarios.objects.filter(user_name__exact=usuario).values()
         fechareg=str(consultausuarios[0]['fecha_registro'])
         fecha_obj = datetime.fromisoformat(fechareg)
