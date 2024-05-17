@@ -1082,8 +1082,22 @@ def comprobarsesionusuario(request):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
-    if resp==True:           
-        return Response({'message':'OK'},status= status.HTTP_200_OK)
+    if resp==True:
+        print(usuario)
+        consultausuarios=Usuarios.objects.filter(user_name__exact=usuario).values()
+        fechareg=str(consultausuarios[0]['fecha_registro'])
+        fecha_obj = datetime.fromisoformat(fechareg)
+        fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
+        datauser=[{
+                    'username':consultausuarios[0]['user_name'].capitalize(),
+                    'nombre':consultausuarios[0]['nombre_usuario'],
+                    'apellido':consultausuarios[0]['apellido_usuario'],
+                    'fecha_registro':fecha_formateada,
+                    
+                }
+
+                ]     
+        return Response({'datauser':datauser},status= status.HTTP_200_OK)
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     

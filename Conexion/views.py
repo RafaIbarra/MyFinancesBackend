@@ -65,14 +65,13 @@ class Login(TokenObtainPairView):
             user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
             
             token,created=Token.objects.get_or_create(user=user)
-            # print(user)
+           
             consultausuarios=Usuarios.objects.filter(user_name__exact=user).values()
-            # print(consultausuarios[0]['nombre_usuario'])
-            # print(consultausuarios[0]['apellido_usuario'])
+            
             fechareg=str(consultausuarios[0]['fecha_registro'])
             fecha_obj = datetime.fromisoformat(fechareg)
             fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
-            # print(fecha_formateada)
+            
             
             try:
         
@@ -84,7 +83,7 @@ class Login(TokenObtainPairView):
                 })
 
                 datauser=[{
-                    'username':consultausuarios[0]['user_name'],
+                    'username':consultausuarios[0]['user_name'].capitalize(),
                     'nombre':consultausuarios[0]['nombre_usuario'],
                     'apellido':consultausuarios[0]['apellido_usuario'],
                     'fecha_registro':fecha_formateada,
