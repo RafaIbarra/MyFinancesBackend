@@ -129,117 +129,136 @@ class Registro(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        nombre = request.data.get('nombre', '')
-        apellido = request.data.get('apellido', '')
-        nacimiento = request.data.get('nacimiento', '')
-        user = request.data.get('user', '')
-        correo = request.data.get('correo', '')
-        password = request.data.get('password', '')
-        password=password.replace(" ", "")
-        user_reg=formato_user(user)
-        condicion1 = Q(username__exact=user_reg)
-        existente=User.objects.filter(condicion1).values()
+        try:
 
-        if not existente:
-            
-                
-            user_registrar = User.objects.create_user(user_reg, password=password)
-            user_registrar.save()
+            nombre = request.data.get('nombre', '')
+            apellido = request.data.get('apellido', '')
+            nacimiento = request.data.get('nacimiento', '')
+            user = request.data.get('user', '')
+            correo = request.data.get('correo', '')
+            password = request.data.get('password', '')
+            password=password.replace(" ", "")
+            user_reg=formato_user(user)
             condicion1 = Q(username__exact=user_reg)
-            datosnuevo=list(User.objects.filter(condicion1).values())
-            id_nuevo=datosnuevo[0]['id']
-            data_user=(
-                {
-                    'id':id_nuevo,
-                    'nombre_usuario':nombre,
-                    'apellido_usuario':apellido,
-                    'fecha_nacimiento':nacimiento,
-                    'user_name':user_reg,
-                    'correo':correo,
-                    'ultima_conexion':datetime.now(),
-                    'fecha_registro':datetime.now()
-                }
-            )
-            
-            user_serializer=UsuariosSerializer(data=data_user)
-            if user_serializer.is_valid():
+            existente=User.objects.filter(condicion1).values()
 
-                user_serializer.save()
-                n=1
-                while n < 3:
+            if not existente:
+                
                     
-                    if n==1:
-                        catnombre='Servicios'
-                    else:
-                        catnombre='Productos'
-                    data_list_cat1 = []
-                    datasavecat1={
-                        "user": id_nuevo,
-                        "nombre_categoria": catnombre,
-                        "fecha_registro": datetime.now()
-                        
+                user_registrar = User.objects.create_user(user_reg, password=password)
+                user_registrar.save()
+                condicion1 = Q(username__exact=user_reg)
+                datosnuevo=list(User.objects.filter(condicion1).values())
+                id_nuevo=datosnuevo[0]['id']
+                data_user=(
+                    {
+                        'id':id_nuevo,
+                        'nombre_usuario':nombre,
+                        'apellido_usuario':apellido,
+                        'fecha_nacimiento':nacimiento,
+                        'user_name':user_reg,
+                        'correo':correo,
+                        'ultima_conexion':datetime.now(),
+                        'fecha_registro':datetime.now()
                     }
-                    data_list_cat1.append(datasavecat1)
-                    categoria1_serializer=CategoriaGastosSerializers(data=datasavecat1)
-                    if categoria1_serializer.is_valid():
-                        categoria1_serializer.save()
-                    
-                    n=n+1
-            
-                user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
+                )
                 
-                token,created=Token.objects.get_or_create(user=user_registrar)
-            
-                datasesion=({
-                    'user_name':user_reg,
-                    'fecha_conexion':datetime.now(),
-                    'token_session':token.key,
-                    'dispositivo':user_agent,
-                    
-                })
+                user_serializer=UsuariosSerializer(data=data_user)
+                if user_serializer.is_valid():
 
-                sesion_serializers=SesionesActivasSerializers(data=datasesion)
-                if sesion_serializers.is_valid():
+                    user_serializer.save()
+                    n=1
+                    while n < 3:
+                        
+                        if n==1:
+                            catnombre='Servicios'
+                        else:
+                            catnombre='Productos'
+                        data_list_cat1 = []
+                        datasavecat1={
+                            "user": id_nuevo,
+                            "nombre_categoria": catnombre,
+                            "fecha_registro": datetime.now()
+                            
+                        }
+                        data_list_cat1.append(datasavecat1)
+                        categoria1_serializer=CategoriaGastosSerializers(data=datasavecat1)
+                        if categoria1_serializer.is_valid():
+                            categoria1_serializer.save()
+                        
+                        n=n+1
+                
+                    user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
                     
-                    sesion_serializers.save()
+                    token,created=Token.objects.get_or_create(user=user_registrar)
                 
-                
-                datalogin={
-                    'username':user_reg,
-                    'password':password
-                
-                }
-                
-                login_serializer = self.serializer_class(data=datalogin)
-                if login_serializer.is_valid():
+                    datasesion=({
+                        'user_name':user_reg,
+                        'fecha_conexion':datetime.now(),
+                        'token_session':token.key,
+                        'dispositivo':user_agent,
+                        
+                    })
+
+                    sesion_serializers=SesionesActivasSerializers(data=datasesion)
+                    if sesion_serializers.is_valid():
+                        
+                        sesion_serializers.save()
                     
-                    return Response({
-                        'token': login_serializer.validated_data.get('access'),
-                        'refresh': login_serializer.validated_data.get('refresh'),
-                        'sesion':token.key,
-                        'user_name':user_reg.capitalize(),
-                        'message': 'Inicio de Sesion Existoso'
-                    }, status=status.HTTP_200_OK)
-                
-                
-            else :
-                
+                    
+                    datalogin={
+                        'username':user_reg,
+                        'password':password
+                    
+                    }
+                    
+                    login_serializer = self.serializer_class(data=datalogin)
+                    if login_serializer.is_valid():
+                        consultausuarios=Usuarios.objects.filter(user_name__exact=user_reg).values()
+                        fechareg=str(consultausuarios[0]['fecha_registro'])
+                        fecha_obj = datetime.fromisoformat(fechareg)
+                        fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
+                        datauser=[{
+                            'username':consultausuarios[0]['user_name'].capitalize(),
+                            'nombre':consultausuarios[0]['nombre_usuario'],
+                            'apellido':consultausuarios[0]['apellido_usuario'],
+                            'fecha_registro':fecha_formateada,
+                            
+                        }
+
+                        ]
+                        
+                        return Response({
+                            'token': login_serializer.validated_data.get('access'),
+                            'refresh': login_serializer.validated_data.get('refresh'),
+                            'sesion':token.key,
+                            'user_name':user_reg.capitalize(),
+                            'datauser':datauser,
+                            'message': 'Inicio de Sesion Existoso'
+                        }, status=status.HTTP_200_OK)
+                    
+                    
+                else :
+                    
+                    mensajes_error = {}
+
+                    for campo, detalles in user_serializer.errors.items():
+                        mensaje = detalles[0]
+                        if hasattr(mensaje, 'string'):
+                            mensajes_error[campo] = mensaje.string
+                        else:
+                            mensajes_error[campo] = str(mensaje)
+
+                    user_registrar.delete()
+                    return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST)   
+        
+            else:
                 mensajes_error = {}
-
-                for campo, detalles in user_serializer.errors.items():
-                    mensaje = detalles[0]
-                    if hasattr(mensaje, 'string'):
-                        mensajes_error[campo] = mensaje.string
-                    else:
-                        mensajes_error[campo] = str(mensaje)
-
-                user_registrar.delete()
-                return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST)   
-    
-        else:
-            mensajes_error = {}
-            mensajes_error['Username']='Ya se creo el usuario ' + user_reg
-            return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST) 
+                mensajes_error['Username']='Ya se creo el usuario ' + user_reg
+                return Response({'error':mensajes_error},status= status.HTTP_400_BAD_REQUEST) 
+        except Exception as e:
+                
+                return Response({'error':e.args},status= status.HTTP_406_NOT_ACCEPTABLE)
 
 class NotFoundView(APIView):
     """
