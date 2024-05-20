@@ -576,8 +576,21 @@ def actualizardatosusuario(request):
         usuario_serializer=UsuariosSerializer(existente,data=datasave)
         if usuario_serializer.is_valid():
             usuario_serializer.save()
-            
-            return Response(usuario_serializer.data,status= status.HTTP_200_OK)
+            consultausuarios=Usuarios.objects.filter(user_name__exact=user).values()
+            fechareg=str(consultausuarios[0]['fecha_registro'])
+            fecha_obj = datetime.fromisoformat(fechareg)
+            fecha_formateada = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
+            datauser=[{
+                'username':consultausuarios[0]['user_name'].capitalize(),
+                'nombre':consultausuarios[0]['nombre_usuario'],
+                'apellido':consultausuarios[0]['apellido_usuario'],
+                'fecha_registro':fecha_formateada,
+                
+            }
+
+            ]
+            return Response({'datauser':datauser},status= status.HTTP_200_OK)
+
         return Response({'message':usuario_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         
     else:
