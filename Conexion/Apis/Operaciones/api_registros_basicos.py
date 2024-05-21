@@ -879,7 +879,24 @@ def  misdatosregistroegreso (request):
                 return Response({'message':datos_errores},status= status.HTTP_400_BAD_REQUEST)
                 
         else:
-            return Response([],status= status.HTTP_200_OK)
+            if lista_Gastos:
+                result_categoria_serializer=CategoriaGastosSerializers(lista_Gastos,many=True)
+                if result_categoria_serializer.data:
+                    datos_categoria.append(result_categoria_serializer.data)
+                else:
+                    
+                    datos_errores.append({'error categoria':result_categoria_serializer.errors})
+
+
+                if  result_categoria_serializer:
+                    return Response({
+                       
+                        'datoscategorias':result_categoria_serializer.data
+                                    },
+                                    status= status.HTTP_200_OK)
+                    
+            else:
+                return Response([],status= status.HTTP_200_OK)
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
