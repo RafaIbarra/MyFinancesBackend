@@ -891,9 +891,7 @@ def  misdatosregistroegreso (request):
                 if  result_categoria_serializer:
                     return Response({
                        
-                        'datoscategorias':result_categoria_serializer.data
-                                    },
-                                    status= status.HTTP_200_OK)
+                        'datoscategorias':result_categoria_serializer.data},status= status.HTTP_200_OK)
                     
             else:
                 return Response([],status= status.HTTP_200_OK)
