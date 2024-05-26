@@ -40,6 +40,7 @@ urlpatterns = [
 
     path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
     path('MisCategorias/<int:id>/',miscategorias,name='miscategorias'),
+    path('MismediosPagos/<int:id>/',mismediospagos,name='mismediospagos'),
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
     path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),
@@ -83,6 +84,9 @@ urlpatterns = [
     ################################Seguimiento##################################################
     path('SeguimientoUsuarios/',seguimiento_usuarios,name='seguimiento_usuarios'),
     path('SeguimientoSesiones/',seguimiento_sesiones,name='seguimiento_sesiones'),
+
+    ################################Migraciones##################################################
+    path('CargarMediosUsuarios/',CargarMediosUsuarios,name='CargarMediosUsuarios'),
 
 
     

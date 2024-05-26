@@ -63,7 +63,16 @@ class Gastos(models.Model):
     def retorno_categoria_gasto_id(self):
         return self.categoria_id
     
-    
+class MedioPago(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    nombre_medio=models.CharField(max_length=200,blank=False)
+    anotacion=models.CharField(max_length=200,blank=True)
+    user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
+    fecha_registro=models.DateTimeField("fecha registro")
+
+    class Meta:
+        db_table="MedioPago"
+
         
 class Egresos(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)
@@ -73,6 +82,7 @@ class Egresos(models.Model):
     fecha_gasto=models.DateField("fecha egresos")
     anotacion=models.CharField(max_length=200,blank=True)
     fecha_registro=models.DateTimeField("fecha registro")
+    
 
     class Meta:
         db_table="Egresos"

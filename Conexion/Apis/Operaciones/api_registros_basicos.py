@@ -12,7 +12,8 @@ from Conexion.Serializadores.UsuariosSerializers import *
 from Conexion.Serializadores.SolicitudPasswordSerializers import *
 from Conexion.Serializadores.TiposGastosSerializers import *
 from Conexion.Serializadores.TiposProductosFinancierosSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses
+from Conexion.Serializadores.MedioPagoSerializers import *
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses,MedioPago
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.api_generacion_datos import *
@@ -840,6 +841,37 @@ def miscategorias(request,id):
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 @api_view(['POST'])
+def mismediospagos(request,id):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        condicion1 = Q(user_id__exact=id_user)
+        if id >0:
+            condicion2 = Q(id__exact=id)
+            lista_medios= MedioPago.objects.filter(condicion1 & condicion2).order_by('nombre_medio')
+        else:
+
+            lista_medios = MedioPago.objects.filter(condicion1).order_by('nombre_medio')
+        
+        if lista_medios:
+            
+            result_medio_serializer=MedioPagoSerializers(lista_medios,many=True)
+
+            if result_medio_serializer.data:
+                 return Response(result_medio_serializer.data,
+                                status= status.HTTP_200_OK)
+            else:
+
+                return Response({'message':result_medio_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response([],status= status.HTTP_200_OK)
+        
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
 def  misdatosregistroegreso (request):
     token_sesion,usuario,id_user =obtener_datos_token(request)
     resp=validacionpeticion(token_sesion)
@@ -1166,6 +1198,44 @@ def MovileSaldos(request,anno):
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
+
+@api_view(['POST'])
+def CargarMediosUsuarios(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_usuarios = Usuarios.objects.order_by('id').values()
+        
+        for elemento in lista_usuarios:
+            id_elemento = elemento['id']
+            nombre = elemento['user_name']
+            
+            data_list = []
+            datasave={
+                "id":  0,
+                "nombre_medio": 'Efectivo',
+                "anotacion":'',
+                "user":id_elemento,
+                "fecha_registro": datetime.now()
+                
+            }
+            data_list.append(datasave)
+            
+            medio_serializer=MedioPagoSerializers(data=datasave)
+            if medio_serializer.is_valid():
+                medio_serializer.save()
+            else:
+                return Response({'error':medio_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+        return Response([],status= status.HTTP_200_OK)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
     
