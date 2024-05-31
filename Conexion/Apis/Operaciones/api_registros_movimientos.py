@@ -436,7 +436,7 @@ def CargarDistribucionEgresos(request):
             lista_medios = MedioPago.objects.filter(condicion1).order_by('nombre_medio').values()
             
             op_medio=lista_medios[0]['id']
-            print(op_medio)
+            
             data_list = []
             datasave={
                 
@@ -447,7 +447,7 @@ def CargarDistribucionEgresos(request):
                 
             }
             data_list.append(datasave)
-            print(datasave)
+            
             serializer_distri=EgresosDistribucionSerializers(data=datasave)
             if serializer_distri.is_valid():
                 serializer_distri.save()
