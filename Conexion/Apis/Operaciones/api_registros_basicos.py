@@ -15,7 +15,8 @@ from Conexion.Serializadores.TiposProductosFinancierosSerializers import *
 from Conexion.Serializadores.MedioPagoSerializers import *
 from Conexion.Serializadores.EgresosDistribucionSerializers import *
 
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses,MedioPago,EgresosDistribucion
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword
+from Conexion.models import TiposGastos,TiposProductosFinancieros,Meses,MedioPago,EgresosDistribucion
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.api_generacion_datos import *
@@ -1346,60 +1347,11 @@ def CargarMediosUsuarios(request):
             else:
                 return Response({'error':medio_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-
         return Response([],status= status.HTTP_200_OK)
         
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
 
-@api_view(['POST'])
-def CargarDistribucionEgresos(request):
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:
-        lista_egresos = Egresos.objects.order_by('id').values()
-        
-        for elemento in lista_egresos:
-            id_elemento = elemento['id']
-            id_user = elemento['user_id']
-            monto_gasto = elemento['monto_gasto']
-            fecha_gasto = elemento['fecha_gasto']
-            
-            condicion1 = Q(user_id__exact=id_user)
-            lista_medios = MedioPago.objects.filter(condicion1).order_by('nombre_medio').values()
-            
-            op_medio=lista_medios[0]['id']
-            
-            data_list = []
-            datasave={
-                "id":  0,
-                "egresos": id_elemento,
-                "mediopago":op_medio,
-                "monto":monto_gasto,
-                
-                
-            }
-            data_list.append(datasave)
-            
-            distribucion_serializer=EgresosDistribucionSerializers(data=datasave)
-            if distribucion_serializer.is_valid():
-                distribucion_serializer.save()
-            else:
-                return Response({'error':distribucion_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-        return Response([],status= status.HTTP_200_OK)
-        
-    else:
-        return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
     

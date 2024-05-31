@@ -419,6 +419,47 @@ def validaciones_registros(valor,tipo):
         else:
             return True
         
+@api_view(['POST'])
+def CargarDistribucionEgresos(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_egresos = Egresos.objects.order_by('id').values()
+        
+        for elemento in lista_egresos:
+            id_elemento = elemento['id']
+            id_user = elemento['user_id']
+            monto_gasto = elemento['monto_gasto']
+            fecha_gasto = elemento['fecha_gasto']
+            
+            condicion1 = Q(user_id__exact=id_user)
+            lista_medios = MedioPago.objects.filter(condicion1).order_by('nombre_medio').values()
+            
+            op_medio=lista_medios[0]['id']
+            print(op_medio)
+            data_list = []
+            datasave={
+                
+                "egresos": id_elemento,
+                "mediopago":op_medio,
+                "monto":monto_gasto,
+                
+                
+            }
+            data_list.append(datasave)
+            print(datasave)
+            serializer_distri=EgresosDistribucionSerializers(data=datasave)
+            if serializer_distri.is_valid():
+                serializer_distri.save()
+            else:
+                return Response({'error':serializer_distri.errors},status= status.HTTP_400_BAD_REQUEST)
+
+        return Response([],status= status.HTTP_200_OK)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+
+        
 
 
 
