@@ -5,10 +5,12 @@ from django.db.models import Q
 
 from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
-from Conexion.models import Egresos,Ingresos
+from Conexion.Serializadores.EgresosDistribucionSerializers import *
+
+from Conexion.models import Egresos,Ingresos,EgresosDistribucion
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
-
+import json
 import time
 from django.utils import timezone
 import ast
@@ -22,32 +24,48 @@ def registroegreso(request):
     if resp==True:
         data_list = []
         data_errores=''
-        id_gasto=request.data['codgasto']
-        datasave={
-            "id":request.data['codgasto'],
-            "gasto":  request.data['gasto'],
-            "monto_gasto": request.data['monto'],
-            "user": id_user,
-            "fecha_gasto": request.data['fecha'],
-            "anotacion": request.data['anotacion'],
-            "fecha_registro": datetime.now()
+        campos_requeridos = ["mediopago", "monto"]
+        
+        datos_distribucion=json.loads(request.data['distribucion'])
+        id_gasto=int(request.data['codgasto'])
+        # suma_montos = sum(item['monto'] for item in datos_distribucion)
+        # datasave={
+        #     "id":request.data['codgasto'],
+        #     "gasto":  request.data['gasto'],
+        #     "monto_gasto":suma_montos,
+        #     "user": id_user,
+        #     "fecha_gasto": request.data['fecha'],
+        #     "anotacion": request.data['anotacion'],
+        #     "fecha_registro": datetime.now()
             
-        }
+        # }
+        
+        controlcampos=True
+        for item in datos_distribucion:
+            for campo in campos_requeridos:
+                if campo not in item:
+                    controlcampos=False
+                    
+        if controlcampos!=True:
+            suma_montos=0
+            mensaje='Falta de campos en medio de pagos'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+        
+        if controlcampos:
+             suma_montos = sum(item['monto'] for item in datos_distribucion)
+
+        if suma_montos<1:
+            mensaje='El monto no puede ser menor a 1'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
         
         if validaciones_registros(request.data,'fecha_operacion'):
-            fecha_obj = datetime.strptime(datasave['fecha_gasto'], '%Y-%m-%d')
+            fecha_obj = datetime.strptime(request.data['fecha'], '%Y-%m-%d')
             anno=fecha_obj.year
             mes=fecha_obj.month
         else: 
             mensaje='Seleccione una fecha'
             data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
         
-        
-            
-        if validaciones_registros(datasave['monto_gasto'],'monto')==False:
-            mensaje='El monto no puede ser menor a 1'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
-
 
         if validaciones_registros(request.data['gasto'],'gastos')==False:
             mensaje='Selecione el concepto de egreso'
@@ -55,13 +73,21 @@ def registroegreso(request):
 
         
         if len(data_errores)==0:
-
+            datasave={
+                "id":request.data['codgasto'],
+                "gasto":  request.data['gasto'],
+                "monto_gasto":suma_montos,
+                "user": id_user,
+                "fecha_gasto": request.data['fecha'],
+                "anotacion": request.data['anotacion'],
+                "fecha_registro": datetime.now()
+            
+            }
             data_list.append(datasave)
             if id_gasto>0:
-                condicion1 = Q(id__exact=id_gasto)
-                dato_existente=Egresos.objects.filter(condicion1 )
                 
-
+                condicion1 = Q(id__exact=id_gasto)
+                dato_existente=Egresos.objects.filter(condicion1)
                 if dato_existente:
                     
                     existente=Egresos.objects.get(condicion1)
@@ -77,13 +103,65 @@ def registroegreso(request):
                 egreso_serializer=EgresosSerializers(data=datasave)
 
             if egreso_serializer.is_valid():
-                egreso_serializer.save()
-                data=datos_resumen(id_user,anno,mes)
-                return Response(data,status= status.HTTP_200_OK)
+                
+                egreso_instance =egreso_serializer.save()
+                if id_gasto == 0:
+                    id_gasto_gen=egreso_instance.id
+                    for item in datos_distribucion:
+                        item['egresos'] = id_gasto_gen
+                    
+                    EgresosDistribucion.objects.filter(egresos_id=id_gasto_gen).delete()
+                    serializer = EgresosDistribucionSerializers(data=datos_distribucion, many=True)
+                    if serializer.is_valid():
+                        serializer.save()
+                        data=datos_resumen(id_user,anno,mes)
+                        return Response(data,status= status.HTTP_200_OK)
+                    else:
+                        
+                        t=Egresos.objects.get(id=id_gasto_gen)
+                        t.delete()
+                        return Response({'error':'Error en almacenado de medios pagos'},status= status.HTTP_400_BAD_REQUEST)
+                else:
+                    
+                    registros_existentes = EgresosDistribucion.objects.filter(egresos_id=id_gasto)
+                    registros_existentes_dict = [
+                        {"egresos": registro.egresos_id, "mediopago": registro.mediopago_id, "monto": registro.monto}
+                        for registro in registros_existentes
+                    ]
+  
+                    for item in datos_distribucion:
+                        item['egresos'] = id_gasto
+                    
+                    # registros_coincidentes = [registro for registro in datos_distribucion if registro in registros_existentes_dict]
+                    registros_no_enviados = [registro for registro in registros_existentes_dict if registro not in datos_distribucion]
+                    registros_nuevos = [registro for registro in datos_distribucion if registro not in registros_existentes_dict]
+                    
 
-            return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                    if len(registros_no_enviados) >0 or len(registros_nuevos)>0:
+                        
+                        EgresosDistribucion.objects.filter(egresos_id=id_gasto).delete()
+                        
+                        serializer = EgresosDistribucionSerializers(data=datos_distribucion, many=True)
+                        if serializer.is_valid():
+                            serializer.save()
+                            data=datos_resumen(id_user,anno,mes)
+                            return Response(data,status= status.HTTP_200_OK)
+                        else:
+                            
+                            return Response({'error':'Error en almacenado de medios pagos'},status= status.HTTP_400_BAD_REQUEST)
+
+                    
+                    return Response([],status= status.HTTP_200_OK)
+
+                
+            else:
+                
+                return Response({'message':egreso_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+
+        # return Response([],status= status.HTTP_200_OK)
+
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     

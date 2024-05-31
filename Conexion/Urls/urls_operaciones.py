@@ -10,6 +10,10 @@ urlpatterns = [
     path('RegistroGasto/',registrogasto,name='registrogasto'),
     path('EliminarGastos/',eliminargastos,name='eliminargastos'),
 
+
+    path('RegistroMedioPago/',registromediopago,name='registromediopago'),
+    path('EliminarMediosPagos/',eliminarmediospagos,name='eliminarmediospagos'),
+
     path('RegistroCategoria/',registrocategoria,name='registrocategoria'),
     path('EliminarCategorias/',eliminarcategorias,name='eliminarcategorias'),
 
@@ -40,7 +44,7 @@ urlpatterns = [
 
     path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
     path('MisCategorias/<int:id>/',miscategorias,name='miscategorias'),
-    path('MismediosPagos/<int:id>/',mismediospagos,name='mismediospagos'),
+    path('MisMediosPagos/<int:id>/',mismediospagos,name='mismediospagos'),
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
     path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),
@@ -87,6 +91,7 @@ urlpatterns = [
 
     ################################Migraciones##################################################
     path('CargarMediosUsuarios/',CargarMediosUsuarios,name='CargarMediosUsuarios'),
+    path('CargarDistribucionEgresos/',CargarDistribucionEgresos,name='CargarDistribucionEgresos'),
 
 
     

@@ -68,6 +68,7 @@ class MedioPago(models.Model):
     nombre_medio=models.CharField(max_length=200,blank=False)
     anotacion=models.CharField(max_length=200,blank=True)
     user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
+    estado=models.IntegerField(blank=False,default=1)
     fecha_registro=models.DateTimeField("fecha registro")
 
     class Meta:
@@ -89,6 +90,15 @@ class Egresos(models.Model):
                
     def retorno_gasto_id(self):
         return self.gasto_id
+    
+class EgresosDistribucion(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    egresos=models.ForeignKey(Egresos, on_delete=models.CASCADE)
+    mediopago=models.ForeignKey(MedioPago, on_delete=models.CASCADE)
+    monto=models.IntegerField()
+    class Meta:
+        db_table="EgresosDistribucion"
+        
 
 class TiposProductosFinancieros(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)

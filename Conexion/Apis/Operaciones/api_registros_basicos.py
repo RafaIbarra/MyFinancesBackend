@@ -13,7 +13,9 @@ from Conexion.Serializadores.SolicitudPasswordSerializers import *
 from Conexion.Serializadores.TiposGastosSerializers import *
 from Conexion.Serializadores.TiposProductosFinancierosSerializers import *
 from Conexion.Serializadores.MedioPagoSerializers import *
-from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses,MedioPago
+from Conexion.Serializadores.EgresosDistribucionSerializers import *
+
+from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword,TiposGastos,TiposProductosFinancieros,Meses,MedioPago,EgresosDistribucion
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.api_generacion_datos import *
@@ -532,6 +534,112 @@ def eliminarcategorias(request):
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
+@api_view(['POST'])
+def registromediopago(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        try:
+            data_list = []
+            data_errores=''
+            id_medio_pago=int(request.data['codigomediopago'])
+            
+            
+                
+            datasave={
+                "id":  request.data['codigomediopago'],
+                "nombre_medio": request.data['nombre'],
+                "anotacion": request.data['anotacion'],
+                "estado":request.data['estado'],
+                "user": id_user,
+                "fecha_registro": datetime.now()
+                
+            }
+            data_list.append(datasave)
+            
+
+            if len(datasave['nombre_medio']) < 1:
+                mensaje='Ingrese el nombre para el medio de pago'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+            existeregistro=False
+            condicion1 = Q(user_id__exact=id_user)
+            consulta_medio= list(MedioPago.objects.filter(condicion1).values())
+            
+            for item in consulta_medio:
+                if item['nombre_medio'].replace(' ','').lower()==datasave['nombre_medio'].replace(' ','').lower() and item['id'] != id_medio_pago:
+                    existeregistro=True
+
+            if existeregistro:
+                mensaje='Ya se registro un medio de pago con este nombre'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+            if len(data_errores)==0:
+                if id_medio_pago>0:
+                    condicion1 = Q(id__exact=id_medio_pago)
+                    dato_existente=MedioPago.objects.filter(condicion1 )
+                    if dato_existente:
+                        
+                        existente=MedioPago.objects.get(condicion1)
+                        
+                        medio_serializer=MedioPagoSerializers(existente,data=datasave)
+
+                    else:
+                        return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+                
+                else:
+                    medio_serializer=MedioPagoSerializers(data=datasave)
+
+                if medio_serializer.is_valid():
+                    medio_serializer.save()
+                    condicion1 = Q(user_id__exact=id_user)
+                    lista = MedioPago.objects.filter(condicion1).order_by( 'nombre_medio')
+                    result_serializer=MedioPagoSerializers(lista,many=True)
+                    return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+                return Response({'message':medio_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            else:
+                
+                return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+                return Response({'error':  {str(e)}},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
+def eliminarmediospagos(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        mediodel=request.data['medios']
+        if type(mediodel)==str:
+            mediodel=ast.literal_eval(mediodel)
+
+        if len(mediodel):
+            for item in mediodel:
+                condicion1 = Q(id__exact=item)
+                lista=MedioPago.objects.filter(condicion1).values()
+
+                if lista:
+                    pagosreg=EgresosDistribucion.objects.filter(mediopago_id__exact=item).values()
+                    if pagosreg:
+                        return Response({'error':'Se registraron gastos con este medio, no puede ser eliminado'},status= status.HTTP_400_BAD_REQUEST)
+                    else:
+
+                        gasto = MedioPago.objects.get(pk=item)
+                        gasto.delete()
+
+            condicion1 = Q(user_id__exact=id_user)
+            lista_medios=MedioPago.objects.filter(condicion1)
+            result_serializer=MedioPagoSerializers(lista_medios,many=True)
+            return Response(result_serializer.data,status= status.HTTP_200_OK)
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+    
+
 
 @api_view(['POST'])
 def obtenerdatosusuario(request):
@@ -880,12 +988,18 @@ def  misdatosregistroegreso (request):
       
         lista = Gastos.objects.filter(condicion1).order_by('categoria', 'nombre_gasto')
         lista_Gastos = CategoriaGastos.objects.filter(condicion1).order_by('nombre_categoria')
+        condicion2 = Q(estado__exact=1)
+        lista_medios=MedioPago.objects.filter(condicion1 & condicion2 ).order_by('nombre_medio')
+
         datos_gastos=[]
         datos_categoria=[]
+        datos_medios=[]
+
         datos_errores=[]
-        if lista and lista_Gastos:
+        if lista and lista_Gastos and lista_medios:
             result_gastos_serializer=GastosSerializers(lista,many=True)
             result_categoria_serializer=CategoriaGastosSerializers(lista_Gastos,many=True)
+            result_medios_serializer=MedioPagoSerializers(lista_medios,many=True)
 
             if result_gastos_serializer.data:
                  datos_gastos.append(result_gastos_serializer.data)
@@ -895,15 +1009,21 @@ def  misdatosregistroegreso (request):
             if result_categoria_serializer.data:
                  datos_categoria.append(result_categoria_serializer.data)
             else:
-                 
                  datos_errores.append({'error categoria':result_categoria_serializer.errors})
+
+            if result_medios_serializer.data:
+                 datos_medios.append(result_medios_serializer.data)
+            else:
+                 
+                 datos_errores.append({'error medio pago':result_medios_serializer.errors})
                  
 
             if result_gastos_serializer.data and result_categoria_serializer:
                 return Response({
                      'datosgastos':result_gastos_serializer.data,
-                     'datoscategorias':result_categoria_serializer.data
-                                },
+                     'datoscategorias':result_categoria_serializer.data,
+                     'datosmedios':result_medios_serializer.data,
+                     },
                                 status= status.HTTP_200_OK)
             
             else:
@@ -1237,5 +1357,50 @@ def CargarMediosUsuarios(request):
     else:
         return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
+
+@api_view(['POST'])
+def CargarDistribucionEgresos(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_egresos = Egresos.objects.order_by('id').values()
+        
+        for elemento in lista_egresos:
+            id_elemento = elemento['id']
+            id_user = elemento['user_id']
+            monto_gasto = elemento['monto_gasto']
+            fecha_gasto = elemento['fecha_gasto']
+            
+            condicion1 = Q(user_id__exact=id_user)
+            lista_medios = MedioPago.objects.filter(condicion1).order_by('nombre_medio').values()
+            
+            op_medio=lista_medios[0]['id']
+            
+            data_list = []
+            datasave={
+                "id":  0,
+                "egresos": id_elemento,
+                "mediopago":op_medio,
+                "monto":monto_gasto,
+                
+                
+            }
+            data_list.append(datasave)
+            
+            distribucion_serializer=EgresosDistribucionSerializers(data=datasave)
+            if distribucion_serializer.is_valid():
+                distribucion_serializer.save()
+            else:
+                return Response({'error':distribucion_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+        return Response([],status= status.HTTP_200_OK)
+        
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
 
     

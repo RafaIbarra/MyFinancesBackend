@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from Conexion.models import Gastos,TiposGastos,CategoriaGastos,Egresos,Meses
+from Conexion.models import Gastos,TiposGastos,CategoriaGastos,Egresos,Meses,EgresosDistribucion,MedioPago
+from Conexion.Serializadores import EgresosDistribucionSerializers
 from django.db.models import Q
 
 class EgresosSerializers(serializers.ModelSerializer):
@@ -10,6 +11,7 @@ class EgresosSerializers(serializers.ModelSerializer):
     MesEgreso=serializers.SerializerMethodField()
     NombreMesEgreso=serializers.SerializerMethodField()
     AnnoEgreso=serializers.SerializerMethodField()
+    Distribucion=serializers.SerializerMethodField()
     class Meta:
         model=Egresos
         fields= ['id'
@@ -26,8 +28,30 @@ class EgresosSerializers(serializers.ModelSerializer):
                 ,'MesEgreso'
                 ,'NombreMesEgreso'
                 ,'AnnoEgreso'
+                ,'Distribucion'
                 ]
     fecha_registro = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    def get_Distribucion(self, obj):
+        
+        try:
+            # condicion2 = Q(egresos_id=cod_gasto)
+            result=[]
+            distrinucion_obj = EgresosDistribucion.objects.filter(egresos_id=obj.id).values()
+            for elemento in distrinucion_obj:
+                id_medio=elemento['mediopago_id']
+                dato_medio=MedioPago.objects.filter(id=id_medio).values()
+                
+                valores={
+                    "id":elemento['id'],
+                    "egresos_id":elemento['egresos_id'],
+                    "mediopago_id":elemento['mediopago_id'],
+                    "monto":elemento['monto'],
+                    "descripcionmedio":dato_medio[0]['nombre_medio']
+                }
+                result.append(valores)
+            return result
+        except EgresosDistribucion.DoesNotExist:
+            return None
     def get_NombreGasto(self, obj):
         
         cod_gasto = obj.retorno_gasto_id()
