@@ -40,8 +40,7 @@ def registrotipogasto(request):
         "id":  request.data['id'],
         "nombre_tipo_gasto":  request.data['nombre'],
         "fecha_registro": datetime.now()
-        
-    }
+        }
     data_list.append(datasave)
     
     if len(datasave['nombre_tipo_gasto']) < 1:
