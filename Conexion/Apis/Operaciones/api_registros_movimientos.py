@@ -6,8 +6,9 @@ from django.db.models import Q
 from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.EgresosDistribucionSerializers import *
+from Conexion.Serializadores.MovimientosBeneficiosSerializers import *
 
-from Conexion.models import Egresos,Ingresos,EgresosDistribucion
+from Conexion.models import Egresos,Ingresos,EgresosDistribucion,MovimientosBeneficios
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 import json
@@ -321,6 +322,119 @@ def eliminaringreso(request):
     
 
 @api_view(['POST'])
+def registromovimientobeneficio(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        data_list = []
+              
+        id_beneficion=int(request.data['codbeneficio'])
+        
+        datasave={
+            "id":request.data['codbeneficio'],
+            "entidad":  request.data['entidad'],
+            "monto": request.data['monto'],
+            "user": id_user,
+            "fecha_beneficio": request.data['fecha'],
+            "anotacion": request.data['anotacion'],
+            "fecha_registro": datetime.now()
+            
+        }
+        data_errores=''
+        
+        
+
+        if validaciones_registros(request.data,'fecha_operacion'):
+            fecha_obj = datetime.strptime(datasave['fecha_beneficio'], '%Y-%m-%d')
+            anno=fecha_obj.year
+            mes=fecha_obj.month
+        else: 
+            mensaje='Seleccione una fecha'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+        
+        
+            
+        if validaciones_registros(datasave['monto'],'monto')==False:
+            mensaje='El monto no puede ser menor a 1'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+        if validaciones_registros(request.data['entidad'],'entidad')==False:
+            mensaje='Seleccione la entidad'
+            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+        
+        if len(data_errores)==0:
+            data_list.append(datasave)
+            if id_beneficion>0:
+                condicion1 = Q(id__exact=id_beneficion)
+                dato_existente=MovimientosBeneficios.objects.filter(condicion1 )
+                
+
+                if dato_existente:
+                    
+                    existente=MovimientosBeneficios.objects.get(condicion1)
+                    
+                    movimiento_serializer=MovimientosBeneficiosSerializers(existente,data=datasave)
+
+                else:
+                    return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+                
+
+            else:
+
+                movimiento_serializer=MovimientosBeneficiosSerializers(data=datasave)
+
+
+            if movimiento_serializer.is_valid():
+                movimiento_serializer.save()
+                
+                return Response(movimiento_serializer.data,status= status.HTTP_200_OK)
+            
+
+
+            return Response({'message':movimiento_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def eliminarmovimientobeneficio(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+         
+     
+        anno=datetime.now().year
+        mes=datetime.now().month
+        movimientodel=request.data['movimientos']
+
+        if type(movimientodel)==str:
+            movimientodel=ast.literal_eval(movimientodel)
+
+        if len(movimientodel)>0:
+            for item in movimientodel:
+                condicion1 = Q(id__exact=item)
+                lista=MovimientosBeneficios.objects.filter(condicion1).values()
+                if lista:
+                    
+                    movimiento = MovimientosBeneficios.objects.get(pk=item)
+                    movimiento.delete()
+
+
+            
+            return Response({'message':'OK'},status= status.HTTP_200_OK)
+            
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+    else:
+         return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['POST'])
 def estadisticas_mes(request,anno,mes):
 
     token_sesion,usuario,id_user =obtener_datos_token(request)
@@ -414,6 +528,13 @@ def validaciones_registros(valor,tipo):
         
     if tipo=='gastos':
         consultagasto=Gastos.objects.filter(id__exact=valor).values()
+        if not consultagasto:
+            return False
+        else:
+            return True
+        
+    if tipo=='entidad':
+        consultagasto=EntidadesBeneficios.objects.filter(id__exact=valor).values()
         if not consultagasto:
             return False
         else:

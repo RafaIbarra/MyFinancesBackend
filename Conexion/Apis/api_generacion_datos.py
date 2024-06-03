@@ -1,11 +1,12 @@
 from django.db.models import Q
 import pandas as pd
-from  Conexion.models import Egresos, Ingresos
+from  Conexion.models import Egresos, Ingresos,MovimientosBeneficios
 from Conexion.Serializadores.EgresosSerializers import *
 from Conexion.Serializadores.IngresosSerializers import *
 from Conexion.Serializadores.BalanceSerializers import *
 from Conexion.Serializadores.ResumenSerializers import *
 from Conexion.Serializadores.SaldosPeriodoSerializers import *
+from Conexion.Serializadores.MovimientosBeneficiosSerializers import *
 from django.utils import timezone
 from datetime import datetime
 import pandas as pd
@@ -85,6 +86,32 @@ def registros_egresos(user,anno,mes):
     else:
         []
 
+def registros_movimientos_beneficios(user,anno,mes,codigo):
+    if codigo==0:
+
+        if anno >0:
+            condicion1 = Q(user_id__exact=user)
+            condicion2 = Q(fecha_beneficio__year=anno)
+            if mes>0:
+                condicion3 = Q(fecha_beneficio__month=mes)
+                lista=MovimientosBeneficios.objects.filter(condicion1 & condicion2 & condicion3)
+                print('la lista es')
+                print(lista)
+            else:
+                lista=MovimientosBeneficios.objects.filter(condicion1 & condicion2)
+        else:
+            condicion1 = Q(user_id__exact=user)
+            lista=MovimientosBeneficios.objects.filter(condicion1 )
+    else:
+        condicion1 = Q(id__exact=codigo)
+        lista=MovimientosBeneficios.objects.filter(condicion1 )
+            
+    if lista:
+        return lista
+            
+    else:
+        []
+
 def datos_ingresos(user,anno,mes):
     lista = registros_ingresos(user,anno,mes)
     if lista:
@@ -107,6 +134,18 @@ def datos_egresos(user,anno,mes):
         
         return []
 
+def datos_movimientos_beneficios(user,anno,mes,codigo):
+    
+    lista = registros_movimientos_beneficios(user,anno,mes,codigo)
+    
+    
+    if lista:
+        result_serializer=MovimientosBeneficiosSerializers(lista,many=True)
+        if result_serializer.data:
+            return result_serializer.data
+    else:
+        print('lista vacia como retorno')
+        return []
 
 
 

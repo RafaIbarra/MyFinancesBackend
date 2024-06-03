@@ -143,7 +143,34 @@ class Ingresos(models.Model):
     def retorno_producto_financiero_id(self):
         return self.producto_financiero_id
     
+
+class EntidadesBeneficios(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    nombre_entidad=models.CharField(max_length=200,blank=False)
+    anotacion=models.CharField(max_length=200,blank=True)
+    user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
+    fecha_registro=models.DateTimeField("fecha registro")
+
+    class Meta:
+        db_table="EntidadesBeneficios"
+
+class MovimientosBeneficios(models.Model):
+    id= models.AutoField(primary_key=True, serialize=False)
+    entidad=models.ForeignKey(EntidadesBeneficios, on_delete=models.CASCADE)
+    monto=models.IntegerField()
+    user=models.ForeignKey(Usuarios, on_delete=models.CASCADE, default=1)
+    fecha_beneficio=models.DateField("fecha beneficio")
+    anotacion=models.CharField(max_length=200,blank=True)
+    fecha_registro=models.DateTimeField("fecha registro")
     
+
+    class Meta:
+        db_table="MovimientosBeneficios"
+
+    def retorno_endtidad_id(self):
+        return self.entidad_id
+               
+
 
 class SesionesActivas(models.Model):
     id= models.AutoField(primary_key=True, serialize=False)

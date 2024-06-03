@@ -14,9 +14,10 @@ from Conexion.Serializadores.TiposGastosSerializers import *
 from Conexion.Serializadores.TiposProductosFinancierosSerializers import *
 from Conexion.Serializadores.MedioPagoSerializers import *
 from Conexion.Serializadores.EgresosDistribucionSerializers import *
+from Conexion.Serializadores.EntidadesBeneficiosSerializers import *
 
 from Conexion.models import Gastos,ProductosFinancieros,CategoriaGastos,Usuarios,SolicitudPassword
-from Conexion.models import TiposGastos,TiposProductosFinancieros,Meses,MedioPago,EgresosDistribucion
+from Conexion.models import TiposGastos,TiposProductosFinancieros,Meses,MedioPago,EgresosDistribucion,EntidadesBeneficios
 from Conexion.Seguridad.obtener_datos_token import obtener_datos_token
 from Conexion.Seguridad.validaciones import validacionpeticion
 from Conexion.Apis.api_generacion_datos import *
@@ -638,6 +639,114 @@ def eliminarmediospagos(request):
             return Response(result_serializer.data,status= status.HTTP_200_OK)
         else:
             return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+        
+
+@api_view(['POST'])
+def registroentidadbeneficio(request):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        try:
+            data_list = []
+            data_errores=''
+            id_entidad=int(request.data['codigoentidad'])
+            
+            
+                
+            datasave={
+                "id":  request.data['codigoentidad'],
+                "nombre_entidad": request.data['nombre'],
+                "anotacion": request.data['anotacion'],
+                "user": id_user,
+                "fecha_registro": datetime.now()
+                
+            }
+            data_list.append(datasave)
+            
+
+            if len(datasave['nombre_entidad']) < 1:
+                mensaje='Ingrese el nombre para la entidad'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+
+            existeregistro=False
+            condicion1 = Q(user_id__exact=id_user)
+            consulta_medio= list(EntidadesBeneficios.objects.filter(condicion1).values())
+            
+            for item in consulta_medio:
+                if item['nombre_entidad'].replace(' ','').lower()==datasave['nombre_entidad'].replace(' ','').lower() and item['id'] != id_entidad:
+                    existeregistro=True
+
+            if existeregistro:
+                mensaje='Ya se registro una entidad con este nombre'
+                data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+
+            if len(data_errores)==0:
+                if id_entidad>0:
+                    condicion1 = Q(id__exact=id_entidad)
+                    dato_existente=EntidadesBeneficios.objects.filter(condicion1 )
+                    if dato_existente:
+                        
+                        existente=EntidadesBeneficios.objects.get(condicion1)
+                        
+                        entidad_serializer=EntidadesBeneficiosSerializers(existente,data=datasave)
+
+                    else:
+                        return Response({'message':'El registro a actualizar no existe'},status= status.HTTP_400_BAD_REQUEST)
+                
+                else:
+                    entidad_serializer=EntidadesBeneficiosSerializers(data=datasave)
+
+                if entidad_serializer.is_valid():
+                    entidad_serializer.save()
+                    condicion1 = Q(user_id__exact=id_user)
+                    lista = EntidadesBeneficios.objects.filter(condicion1).order_by( 'nombre_entidad')
+                    result_serializer=EntidadesBeneficiosSerializers(lista,many=True)
+                    return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+                return Response({'message':entidad_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+            else:
+                
+                return Response({'error':data_errores},status= status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+                return Response({'error':  {str(e)}},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def eliminarentidadesbeneficios(request):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        entidadesdel=request.data['enitidades']
+        if type(entidadesdel)==str:
+            entidadesdel=ast.literal_eval(entidadesdel)
+
+        if len(entidadesdel):
+            for item in entidadesdel:
+                condicion1 = Q(id__exact=item)
+                # lista=MedioPago.objects.filter(condicion1).values()
+
+                # if lista:
+                #     pagosreg=EgresosDistribucion.objects.filter(mediopago_id__exact=item).values()
+                #     if pagosreg:
+                #         return Response({'error':'Se registraron gastos con este medio, no puede ser eliminado'},status= status.HTTP_400_BAD_REQUEST)
+                #     else:
+
+                #         gasto = MedioPago.objects.get(pk=item)
+                #         gasto.delete()
+
+                gasto = EntidadesBeneficios.objects.get(pk=item)
+                gasto.delete()
+
+            condicion1 = Q(user_id__exact=id_user)
+            lista_entidades=EntidadesBeneficios.objects.filter(condicion1)
+            result_serializer=EntidadesBeneficiosSerializers(lista_entidades,many=True)
+            return Response(result_serializer.data,status= status.HTTP_200_OK)
+        else:
+            return Response({'message':'No hay registros que eliminar'},status= status.HTTP_200_OK)
+    
     
 
 
@@ -1100,6 +1209,53 @@ def misproductosfinancieros(request,id):
                 
         else:
             return Response([],status= status.HTTP_200_OK)
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def misentidadesbeneficios(request,id):
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:           
+        condicion1 = Q(user_id__exact=id_user)
+        if id > 0:
+            condicion2 = Q(id__exact=id)
+            lista=EntidadesBeneficios.objects.filter(condicion1 & condicion2)
+        else:
+            lista=EntidadesBeneficios.objects.filter(condicion1)
+                
+        if lista:
+            result_serializer=EntidadesBeneficiosSerializers(lista,many=True)
+
+            if result_serializer.data:
+                return Response(result_serializer.data,status= status.HTTP_200_OK)
+
+            return Response({'message':result_serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response([],status= status.HTTP_200_OK)
+    else:
+            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+    
+@api_view(['POST'])
+def mismovimientosbeneficios(request,anno,mes,codigo):
+
+    token_sesion,usuario,id_user =obtener_datos_token(request)
+    resp=validacionpeticion(token_sesion)
+    if resp==True:
+        lista_movimientos=datos_movimientos_beneficios(id_user,anno,mes,codigo)
+        if lista_movimientos:
+
+            lista_movimientos=sorted(lista_movimientos, key=lambda x: x['id'], reverse=False)
+            
+            
+            if lista_movimientos:
+                
+            
+                return Response(lista_movimientos,status= status.HTTP_200_OK)
+        else:
+            return Response([],status= status.HTTP_200_OK)
+        
     else:
             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     

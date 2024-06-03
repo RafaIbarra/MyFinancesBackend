@@ -28,6 +28,12 @@ urlpatterns = [
     path('RegistroIngreso/',registroingreso,name='registroingreso'),
     path('EliminarIngreso/',eliminaringreso,name='eliminaringreso'),
 
+    path('RegistroMovimientoBeneficio/',registromovimientobeneficio,name='registromovimientobeneficio'),
+    path('EliminarMovimientoBeneficio/',eliminarmovimientobeneficio,name='eliminarmovimientobeneficio'),
+
+    path('RegistroEntidadBeneficio/',registroentidadbeneficio,name='registroentidadbeneficio'),
+    path('EliminarEntidadesBeneficios/',eliminarentidadesbeneficios,name='eliminarentidadesbeneficios'),
+
     path('ObtenerDatosUsuario/',obtenerdatosusuario,name='obtenerdatosusuario'),
     path('ActualizarDatosUsuario/',actualizardatosusuario,name='actualizardatosusuario'),
 
@@ -45,12 +51,16 @@ urlpatterns = [
     path('MisDatosRegistroEgreso/',misdatosregistroegreso,name='misdatosregistroegreso'),
     path('MisCategorias/<int:id>/',miscategorias,name='miscategorias'),
     path('MisMediosPagos/<int:id>/',mismediospagos,name='mismediospagos'),
+    
 
     path('EstadisticasEgresos/<int:anno>/<int:mes>/',estadisticas_egresos,name='estadisticas_egresos'),
     path('EstadisticasIngresos/<int:anno>/<int:mes>/',estadisticas_ingresos,name='estadisticas_ingresos'),
 
     path('MisProductosFinancieros/<int:id>/',misproductosfinancieros,name='misproductosfinancieros'),
     path('MisIngresos/<int:anno>/<int:mes>/',misingresos,name='misingresos'),
+
+    path('MisEntidadesBeneficios/<int:id>/',misentidadesbeneficios,name='misentidadesbeneficios'),
+    path('MisMovimientosBeneficios/<int:anno>/<int:mes>/<int:codigo>/',mismovimientosbeneficios,name='mismovimientosbeneficios'),
 
     path('Balance/<int:anno>/<int:mes>/',balance,name='balance'),
     path('Resumen/<int:anno>/<int:mes>/',resumen,name='resumen'),
