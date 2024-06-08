@@ -32,8 +32,8 @@ DEBUG = 'RENDER' not in os.environ
 if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
     
-    ALLOWED_HOSTS = [allow_host]
-    # ALLOWED_HOSTS = ['127.0.0.1']
+    # ALLOWED_HOSTS = [allow_host]
+    ALLOWED_HOSTS = ['10.10.0.204']
 
 else:
    ALLOWED_HOSTS = [] 

@@ -214,7 +214,7 @@ def registroingreso(request):
     if resp==True:
         data_list = []
                     
-        id_ingreso=request.data['codingreso']
+        id_ingreso=int(request.data['codingreso'])
         datasave={
             "id":request.data['codingreso'],
             "producto_financiero":  request.data['producto'],
@@ -239,9 +239,9 @@ def registroingreso(request):
         
         
             
-        if validaciones_registros(datasave['monto_ingreso'],'monto')==False:
-            mensaje='El monto no puede ser menor a 1'
-            data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
+        # if validaciones_registros(datasave['monto_ingreso'],'monto')==False:
+        #     mensaje='El monto no puede ser menor a 1'
+        #     data_errores = data_errores + mensaje if len(data_errores) == 0 else data_errores + '; ' + mensaje
 
 
         if validaciones_registros(request.data['producto'],'productos')==False:

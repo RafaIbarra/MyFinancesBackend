@@ -95,8 +95,7 @@ def registros_movimientos_beneficios(user,anno,mes,codigo):
             if mes>0:
                 condicion3 = Q(fecha_beneficio__month=mes)
                 lista=MovimientosBeneficios.objects.filter(condicion1 & condicion2 & condicion3)
-                print('la lista es')
-                print(lista)
+                
             else:
                 lista=MovimientosBeneficios.objects.filter(condicion1 & condicion2)
         else:
@@ -144,16 +143,23 @@ def datos_movimientos_beneficios(user,anno,mes,codigo):
         if result_serializer.data:
             return result_serializer.data
     else:
-        print('lista vacia como retorno')
+        
         return []
 
 
 
 def datos_balance(user,anno,mes):
     egresos=registros_egresos(user,anno,mes)
+    
     ingresos=registros_ingresos(user,anno,mes)
     if egresos:
-        df_egresos = pd.DataFrame(EgresosSerializers(egresos, many=True).data)
+        egresos_serializer=EgresosSerializers(egresos, many=True).data
+
+        df_egresos = pd.DataFrame(egresos_serializer)
+        
+        distribucion_data = [item for sublist in [record['Distribucion'] for record in egresos_serializer] for item in sublist]
+        df_ditribucion = pd.DataFrame(distribucion_data)
+        
         
         
     else:
@@ -174,9 +180,29 @@ def datos_balance(user,anno,mes):
         df_egresos = pd.DataFrame(empytegresos)
 
 
-    df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
-    df_egresos_agrupado['Codigo'] = 2
-    df_egresos_agrupado = df_egresos_agrupado.rename(columns={'NombreGasto': 'Descripcion', 'TipoGasto': 'Tipo', 'monto_gasto': 'MontoEgreso'})
+    # df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
+    # df_egresos_agrupado['Codigo'] = 2
+    
+    df_egresos_agrupado_cat= df_egresos.groupby(['NombreGasto'])['monto_gasto'].sum().reset_index()
+    df_egresos_agrupado_cat['Codigo'] = 2
+    df_egresos_agrupado_cat['Tipo'] = 'Categoria'
+
+    
+    df_egresos_agrupado = df_egresos_agrupado_cat.rename(columns={'NombreGasto': 'Descripcion',  'monto_gasto': 'MontoEgreso'})
+
+    df_ditribucion_agrupado= df_ditribucion.groupby(['descripcionmedio']).agg({'monto': ['sum', 'count']})
+    df_ditribucion_agrupado.columns = ['MontoMedio', 'CantidadRegistros']
+
+    
+    df_ditribucion_agrupado=df_ditribucion_agrupado.reset_index()
+    df_ditribucion_agrupado=df_ditribucion_agrupado.rename(columns={'descripcionmedio': 'MedioPago'})
+    
+    df_conceptos= df_egresos.groupby(['NombreGasto']).agg({'monto_gasto': ['sum', 'count']})
+    df_conceptos.columns = ['MontoConcepto', 'CantidadRegistros']
+    df_conceptos=df_conceptos.reset_index()
+
+    
+    
 
     if ingresos:
         
@@ -193,31 +219,44 @@ def datos_balance(user,anno,mes):
     df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
     df_ingresos_agrupado['Codigo'] = 1
     df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})        
-
+    
     df_final = pd.merge(df_ingresos_agrupado,df_egresos_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer', suffixes=('_Ingreso','_Egreso' ))
     df_final = df_final.fillna(0)
     
+    df_final = df_final.sort_values(by='MontoIngreso',ascending=False)
+    data_list = df_final.to_dict(orient='records')
+    
+    
+
     sumaingresos=df_final['MontoIngreso'].sum()
     sumaegresos=df_final['MontoEgreso'].sum()
     saldo=sumaingresos- sumaegresos
     
-    list_saldos={'Codigo':3,'Descripcion':'Totales','Tipo':'Resumen','MontoIngreso':sumaingresos,'MontoEgreso':sumaegresos}
     df_final = df_final.sort_values(by='MontoIngreso',ascending=False) 
     
-    
-    df_saldos = pd.DataFrame([list_saldos])
-    df_result_final = pd.concat([df_final, df_saldos], ignore_index=True, sort=False)
-    df_result_final = df_result_final.fillna(0)
+    df_result_final = df_final.fillna(0)
     df_result_final['Saldo']=saldo
-    
     data_list = df_result_final.to_dict(orient='records')
+
+    data_list_medio = df_ditribucion_agrupado.to_dict(orient='records')
+    data_list_concepto = df_conceptos.to_dict(orient='records')
+    
+
+  
     
     resultado=BalanceSerializers(data=data_list,many=True)
-
+    resultadomedio=MediosResumenSerializers(data=data_list_medio,many=True)
+    resultadoconcepto=ConceptosResumenSerializers(data=data_list_concepto,many=True)
     
-    if  resultado.is_valid():
+    
+    if  resultado.is_valid() and resultadomedio.is_valid() and resultadoconcepto.is_valid():
         
-        return(resultado.data)
+        return({
+                'resumen':resultado.data,
+                'medios':resultadomedio.data,
+                'conceptos':resultadoconcepto.data,
+
+                })
             
             
 
@@ -275,19 +314,28 @@ def datos_resumen(user,anno,mes):
     
     
     egresos=datos_egresos(user,anno,mes)
+    
+
     ingresos=datos_ingresos(user,anno,mes)
+    
+
     balance=datos_balance(user,anno,mes)
+    
 
     saldosperiodo=datos_saldos_periodos(user,anno)
     
     resumen_data={
-                    'Resumen':balance,
+                    'Resumen':balance['resumen'],
                     'Ingresos':ingresos,
                     'Egresos':egresos,
                     'Saldos':saldosperiodo
                 }
+    
     r_final = ResumenSerializers(resumen_data)
+    
     if r_final.data:
+        
+
         # imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
         # imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
         # imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
@@ -322,13 +370,15 @@ def imagenes_mes(user,anno,mes):
 def datos_resumen_movile(user,anno,mes):
 
     balance=datos_balance(user,anno,mes)
-    registros_con_codigo_menor_a_3 = [registro for registro in balance if registro['Codigo'] < 3]
+    # registros_con_codigo_menor_a_3 = [registro for registro in balance if registro['Codigo'] < 3]
     
     if balance:
         # imagen_resumen=generar_graf_torta_resumen(ingresos,egresos)
         # imagen_egresos=generar_graf_torta_egresos(user,anno,mes)
         # imagen_ingresos=generar_graf_torta_ingresos(user,anno,mes)
-        return registros_con_codigo_menor_a_3
+
+        # return registros_con_codigo_menor_a_3
+        return balance
             
         
     else:
