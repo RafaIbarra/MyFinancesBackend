@@ -150,8 +150,21 @@ def datos_movimientos_beneficios(user,anno,mes,codigo):
 
 def datos_balance(user,anno,mes):
     egresos=registros_egresos(user,anno,mes)
-    
+    beneficios=registros_movimientos_beneficios(user,anno,mes,0)
+    # print(beneficios)
     ingresos=registros_ingresos(user,anno,mes)
+    # print(ingresos)
+
+    if beneficios:
+        df_beneficios = pd.DataFrame(MovimientosBeneficiosSerializers(beneficios, many=True).data)
+        # print(df_beneficios)
+    else:
+        emptybeneficio=[{'id': 0, 'entidad': 0, 'NombreEntidad':'SN',
+                        'monto': 0, 'user': 1, 'fecha_beneficio':datetime.now() , 'anotacion': '', 
+                        'fecha_registro': datetime.now()
+                        }]
+        df_ingresos = pd.DataFrame(emptyingresos)
+
     if egresos:
         egresos_serializer=EgresosSerializers(egresos, many=True).data
 
@@ -160,8 +173,7 @@ def datos_balance(user,anno,mes):
         distribucion_data = [item for sublist in [record['Distribucion'] for record in egresos_serializer] for item in sublist]
         df_ditribucion = pd.DataFrame(distribucion_data)
         
-        
-        
+             
     else:
          
         empytegresos=[{
@@ -183,12 +195,12 @@ def datos_balance(user,anno,mes):
     # df_egresos_agrupado = df_egresos.groupby(['NombreGasto','TipoGasto'])['monto_gasto'].sum().reset_index()
     # df_egresos_agrupado['Codigo'] = 2
     
-    df_egresos_agrupado_cat= df_egresos.groupby(['NombreGasto'])['monto_gasto'].sum().reset_index()
+    df_egresos_agrupado_cat= df_egresos.groupby(['CategoriaGasto'])['monto_gasto'].sum().reset_index()
     df_egresos_agrupado_cat['Codigo'] = 2
     df_egresos_agrupado_cat['Tipo'] = 'Categoria'
 
     
-    df_egresos_agrupado = df_egresos_agrupado_cat.rename(columns={'NombreGasto': 'Descripcion',  'monto_gasto': 'MontoEgreso'})
+    df_egresos_agrupado = df_egresos_agrupado_cat.rename(columns={'CategoriaGasto': 'Descripcion',  'monto_gasto': 'MontoEgreso'})
 
     df_ditribucion_agrupado= df_ditribucion.groupby(['descripcionmedio']).agg({'monto': ['sum', 'count']})
     df_ditribucion_agrupado.columns = ['MontoMedio', 'CantidadRegistros']
