@@ -151,9 +151,9 @@ def datos_movimientos_beneficios(user,anno,mes,codigo):
 def datos_balance(user,anno,mes):
     egresos=registros_egresos(user,anno,mes)
     beneficios=registros_movimientos_beneficios(user,anno,mes,0)
-    # print(beneficios)
+    print(beneficios)
     ingresos=registros_ingresos(user,anno,mes)
-    # print(ingresos)
+    print(ingresos)
 
     if beneficios:
         df_beneficios = pd.DataFrame(MovimientosBeneficiosSerializers(beneficios, many=True).data)
