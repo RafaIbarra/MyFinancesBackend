@@ -209,7 +209,7 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS=cors
 else:
     # cors=conex=os.environ.get('CORS_RENDER')
-    CORS_ALLOWED_ORIGINS=['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app/']
+    CORS_ALLOWED_ORIGINS = ['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app']
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
