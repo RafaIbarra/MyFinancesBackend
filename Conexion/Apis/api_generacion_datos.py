@@ -151,19 +151,33 @@ def datos_movimientos_beneficios(user,anno,mes,codigo):
 def datos_balance(user,anno,mes):
     egresos=registros_egresos(user,anno,mes)
     beneficios=registros_movimientos_beneficios(user,anno,mes,0)
-    print(beneficios)
+    
     ingresos=registros_ingresos(user,anno,mes)
-    print(ingresos)
+    
 
     if beneficios:
         df_beneficios = pd.DataFrame(MovimientosBeneficiosSerializers(beneficios, many=True).data)
-        # print(df_beneficios)
+        
     else:
         emptybeneficio=[{'id': 0, 'entidad': 0, 'NombreEntidad':'SN',
                         'monto': 0, 'user': 1, 'fecha_beneficio':datetime.now() , 'anotacion': '', 
-                        'fecha_registro': datetime.now()
+                        'fecha_registro': datetime.now(),'MesBeneficio':0,'NombreMesBeneficio':'SN',
+                        'AnnoBeneficio':0
                         }]
-        df_ingresos = pd.DataFrame(emptyingresos)
+        df_beneficios = pd.DataFrame(emptybeneficio)
+
+    df_beneficios_total=df_beneficios['monto'].sum()
+    
+    df_beneficios_agrupado = pd.DataFrame({
+            'Descripcion': ['Beneficios'],
+            'MontoIngreso': df_beneficios_total,
+            'Codigo': [1],
+            'Tipo': ['Beneficio']
+        })
+    
+    # df_beneficios_agrupado = df_beneficios_agrupado.rename(columns={'NombreEntidad': 'Descripcion',  'monto': 'MontoIngreso'})
+    
+    
 
     if egresos:
         egresos_serializer=EgresosSerializers(egresos, many=True).data
@@ -227,12 +241,18 @@ def datos_balance(user,anno,mes):
                         }]
         df_ingresos = pd.DataFrame(emptyingresos)
 
-
+    
     df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
     df_ingresos_agrupado['Codigo'] = 1
-    df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})        
+    df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})
+
     
-    df_final = pd.merge(df_ingresos_agrupado,df_egresos_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer', suffixes=('_Ingreso','_Egreso' ))
+    df_ingreso_beneficio=pd.merge(df_ingresos_agrupado,df_beneficios_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer')
+    df_ingreso_beneficio['MontoIngreso'] = df_ingreso_beneficio['MontoIngreso_x'].fillna(df_ingreso_beneficio['MontoIngreso_y'])
+    df_ingreso_beneficio.drop(columns=['MontoIngreso_x', 'MontoIngreso_y'], inplace=True)
+    
+    
+    df_final = pd.merge(df_ingreso_beneficio,df_egresos_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer', suffixes=('_Ingreso','_Egreso' ))
     df_final = df_final.fillna(0)
     
     df_final = df_final.sort_values(by='MontoIngreso',ascending=False)
@@ -240,11 +260,11 @@ def datos_balance(user,anno,mes):
     
     
 
-    sumaingresos=df_final['MontoIngreso'].sum()
+    sumaingresos=df_final['MontoIngreso'].sum() 
     sumaegresos=df_final['MontoEgreso'].sum()
     saldo=sumaingresos- sumaegresos
     
-    df_final = df_final.sort_values(by='MontoIngreso',ascending=False) 
+    df_final = df_final.sort_values(by='Codigo',ascending=True) 
     
     df_result_final = df_final.fillna(0)
     df_result_final['Saldo']=saldo

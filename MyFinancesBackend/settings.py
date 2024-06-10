@@ -32,8 +32,8 @@ DEBUG = 'RENDER' not in os.environ
 if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
     
-    # ALLOWED_HOSTS = [allow_host]
-    ALLOWED_HOSTS = ['192.168.0.103']
+    ALLOWED_HOSTS = [allow_host]
+    
 
 else:
    ALLOWED_HOSTS = [] 
@@ -131,10 +131,12 @@ if DEBUG:
         }
     }
 else :
+    # conex=configuracion.CONEX_RENDER
+    conex=os.environ.get('CONEX_RENDER')
     DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default='postgres://conex_finanzas_user:KSOnYs6IPvVeLcDeuM9TqQZJtR1Ym72w@dpg-cnucdfmd3nmc73a9s860-a/conex_finanzas',
+        default=conex,
         conn_max_age=600
     )
 }
@@ -202,27 +204,21 @@ CORS_ALLOW_HEADERS = [
     'Access-Control-Allow-Origin'
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://example.com",
-    "https://sub.example.com",
-    "http://localhost:8080",
-    "http://10.10.0.204:8000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'exp://192.168.1.103:8081',
-    'http://localhost:8081',
-    'https://my-finances-web-btxv.vercel.app',
-]
+if DEBUG:
+    cors=configuracion.CORS
+    CORS_ALLOWED_ORIGINS=cors
+else:
+    cors=conex=os.environ.get('CORS_RENDER')
+    CORS_ALLOWED_ORIGINS=[cors]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_WHITELIST = [
-"http://10.10.0.204:8000",
-'http://127.0.0.1:3000'
-'http://localhost:5173',
-'http://127.0.0.1:5173',
-]
+
+if DEBUG:
+    whitelist=configuracion.WHITE_LIST
+    CORS_ORIGIN_WHITELIST=whitelist
+else:
+    whitelist=cconex=os.environ.get('WHITE_RENDER')
+    CORS_ORIGIN_WHITELIST=[whitelist]
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=20),
