@@ -211,7 +211,7 @@ else:
     # cors=conex=os.environ.get('CORS_RENDER')
     CORS_ALLOWED_ORIGINS=['https://my-finances-web-btxv.vercel.app']
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 if DEBUG:
     whitelist=configuracion.WHITE_LIST
