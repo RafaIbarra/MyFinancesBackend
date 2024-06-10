@@ -208,8 +208,8 @@ if DEBUG:
     cors=configuracion.CORS
     CORS_ALLOWED_ORIGINS=cors
 else:
-    cors=conex=os.environ.get('CORS_RENDER')
-    CORS_ALLOWED_ORIGINS=[cors]
+    # cors=conex=os.environ.get('CORS_RENDER')
+    CORS_ALLOWED_ORIGINS=['https://my-finances-web-btxv.vercel.app']
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -217,8 +217,8 @@ if DEBUG:
     whitelist=configuracion.WHITE_LIST
     CORS_ORIGIN_WHITELIST=whitelist
 else:
-    whitelist=cconex=os.environ.get('WHITE_RENDER')
-    CORS_ORIGIN_WHITELIST=[whitelist]
+    # whitelist=cconex=os.environ.get('WHITE_RENDER')
+    CORS_ORIGIN_WHITELIST=['https://my-finances-web-btxv.vercel.app']
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=20),
