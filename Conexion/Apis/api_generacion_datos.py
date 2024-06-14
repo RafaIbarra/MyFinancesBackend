@@ -223,7 +223,7 @@ def datos_balance(user,anno,mes):
     df_ditribucion_agrupado=df_ditribucion_agrupado.reset_index()
     df_ditribucion_agrupado=df_ditribucion_agrupado.rename(columns={'descripcionmedio': 'MedioPago'})
     
-    df_conceptos= df_egresos.groupby(['NombreGasto']).agg({'monto_gasto': ['sum', 'count']})
+    df_conceptos= df_egresos.groupby(['NombreGasto','CategoriaGasto']).agg({'monto_gasto': ['sum', 'count']})
     df_conceptos.columns = ['MontoConcepto', 'CantidadRegistros']
     df_conceptos=df_conceptos.reset_index()
 

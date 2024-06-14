@@ -22,6 +22,7 @@ class MediosResumenSerializers(serializers.Serializer):
 
 class ConceptosResumenSerializers(serializers.Serializer):
     NombreGasto=serializers.CharField(max_length=200,allow_blank=True)
+    CategoriaGasto=serializers.CharField(max_length=200,allow_blank=True)
     MontoConcepto=serializers.IntegerField()
     CantidadRegistros=serializers.IntegerField()
  
