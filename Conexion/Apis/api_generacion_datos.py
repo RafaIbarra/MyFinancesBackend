@@ -241,10 +241,16 @@ def datos_balance(user,anno,mes):
                         }]
         df_ingresos = pd.DataFrame(emptyingresos)
 
-    
-    df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
-    df_ingresos_agrupado['Codigo'] = 1
-    df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})
+    df_ingreso_total= df_ingresos['monto_ingreso'].sum()
+    # df_ingresos_agrupado = df_ingresos.groupby(['NombreIngreso','TipoIngreso'])['monto_ingreso'].sum().reset_index()
+    # df_ingresos_agrupado['Codigo'] = 1
+    # df_ingresos_agrupado = df_ingresos_agrupado.rename(columns={'NombreIngreso': 'Descripcion', 'TipoIngreso': 'Tipo', 'monto_ingreso': 'MontoIngreso'})
+    df_ingresos_agrupado = pd.DataFrame({
+            'Descripcion': ['Ingresos'],
+            'MontoIngreso': df_ingreso_total,
+            'Codigo': [1],
+            'Tipo': ['Ingresos']
+        })
 
     
     df_ingreso_beneficio=pd.merge(df_ingresos_agrupado,df_beneficios_agrupado,  on=['Codigo','Descripcion', 'Tipo'], how='outer')
