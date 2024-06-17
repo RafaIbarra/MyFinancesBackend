@@ -34,6 +34,7 @@ if DEBUG:
     
     ALLOWED_HOSTS = [allow_host]
     
+    
 
 else:
    ALLOWED_HOSTS = [] 
