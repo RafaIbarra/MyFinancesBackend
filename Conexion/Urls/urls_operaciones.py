@@ -3,6 +3,7 @@ from Conexion.Apis.Operaciones.api_registros_basicos import *
 from Conexion.Apis.Operaciones.api_registros_movimientos import *
 from Conexion.Apis.Estadisticas.api_estadisticas import *
 from Conexion.Apis.SeguimientoApp.seguimiento_app import *
+from Conexion.Apis.Operaciones.migraciones import *
 urlpatterns = [
 
 
@@ -103,6 +104,9 @@ urlpatterns = [
     path('CargarMediosUsuarios/',CargarMediosUsuarios,name='CargarMediosUsuarios'),
     path('CargarDistribucionEgresos/',CargarDistribucionEgresos,name='CargarDistribucionEgresos'),
 
+    ################################ migraciones al local ##################################################
+
+    path('MigracionUsers/',migracionusers,name='migracionusers'),
 
     
 

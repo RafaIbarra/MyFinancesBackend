@@ -1294,9 +1294,9 @@ def balance(request,anno,mes):
 @api_view(['POST'])
 def meses(request):
 
-    token_sesion,usuario,id_user =obtener_datos_token(request)
-    resp=validacionpeticion(token_sesion)
-    if resp==True:           
+     token_sesion,usuario,id_user =obtener_datos_token(request)
+     resp=validacionpeticion(token_sesion)
+     if resp==True:           
         
         
         lista = Meses.objects.order_by('numero_mes')
@@ -1312,8 +1312,8 @@ def meses(request):
                 
         else:
             return Response([],status= status.HTTP_200_OK)
-    else:
-            return Response(resp,status= status.HTTP_403_FORBIDDEN)
+     else:
+             return Response(resp,status= status.HTTP_403_FORBIDDEN)
     
 
 ####################################### Listados Movile ##################################
