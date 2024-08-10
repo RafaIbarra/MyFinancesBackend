@@ -210,7 +210,7 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS=cors
 else:
     # cors=conex=os.environ.get('CORS_RENDER')
-    CORS_ALLOWED_ORIGINS = ['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app','http://localhost:5173/']
+    CORS_ALLOWED_ORIGINS = ['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app']
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
@@ -219,7 +219,7 @@ if DEBUG:
     CORS_ORIGIN_WHITELIST=whitelist
 else:
     # whitelist=cconex=os.environ.get('WHITE_RENDER')
-    CORS_ORIGIN_WHITELIST=['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app/','http://localhost:5173/']
+    CORS_ORIGIN_WHITELIST=['https://my-finances-web-git-main-rafaels-projects-2fb6f3d4.vercel.app/']
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=20),
