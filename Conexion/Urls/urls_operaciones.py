@@ -107,6 +107,19 @@ urlpatterns = [
     ################################ migraciones al local ##################################################
 
     path('MigracionUsers/',migracionusers,name='migracionusers'),
+    path('migracioncategoriagastos/',migracioncategoriagastos,name='migracioncategoriagastos'),
+    path('migracionegresos/',migracionegresos,name='migracionegresos'),
+    path('migracionegresosdistribucion/',migracionegresosdistribucion,name='migracionegresosdistribucion'),
+    path('migracionentidadesbeneficiones/',migracionentidadesbeneficiones,name='migracionentidadesbeneficiones'),
+    path('migraciongastos/',migraciongastos,name='migraciongastos'),
+    path('migracioningresos/',migracioningresos,name='migracioningresos'),
+    path('migracionmediopago/',migracionmediopago,name='migracionmediopago'),
+    path('migracionmeses/',migracionmeses,name='migracionmeses'),
+    path('migracionmovimientosbeneficios/',migracionmovimientosbeneficios,name='migracionmovimientosbeneficios'),
+    path('migracionproductosfinancieros/',migracionproductosfinancieros,name='migracionproductosfinancieros'),
+    path('migraciontiposgastos/',migraciontiposgastos,name='migraciontiposgastos'),
+    path('migraciontiposproductosfinancieros/',migraciontiposproductosfinancieros,name='migraciontiposproductosfinancieros'),
+    path('migracionusuarios/',migracionusuarios,name='migracionusuarios'),
 
     
 
