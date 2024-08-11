@@ -27,8 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY',default='clave secreta')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-#DEBUG = 'RENDER' not in os.environ
+#DEBUG = True
+DEBUG = 'RENDER' not in os.environ
 if DEBUG:
     allow_host = configuracion.LOCAL_ALLOW_HOST
     
